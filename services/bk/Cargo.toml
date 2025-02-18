@@ -1,0 +1,40 @@
+[package]
+name = "bk"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "bk"
+test = true
+bench = true
+
+[dependencies]
+actix-request-logger = { workspace = true }
+flog = { workspace = true }
+clap = { workspace = true }
+log = { workspace = true }
+actix-web = "4.8.0"
+actix-web-prom = "0.8.0"
+anyhow = "1.0.83"
+chrono = "0.4.38"
+deadpool-postgres = "0.13.2"
+env_logger = "0.11.3"
+futures = "0.3.30"
+refinery = { version = "0.8.14", features = ["postgres", "tokio-postgres"] }
+serde = { version = "1.0.201", features = ["derive", "serde_derive"] }
+serde_derive = "1.0.202"
+serde_json = "1.0.117"
+tokio = "1.37.0"
+tokio-postgres = "0.7.10"
+ulid = { version = "1.1.2", features = ["postgres", "serde"] }
+pin-utils = "0.1.0"
+postgres-types = "0.2.6"
+askama = { version = "0.12.1", features = ["with-actix-web"] }
+askama_actix = "0.14.0"
+
+[dev-dependencies]
+serial_test = "3.1.1"
+
+[features]
+default = []
+functional = []
