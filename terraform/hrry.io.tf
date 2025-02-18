@@ -11,11 +11,11 @@ resource "cloudflare_zone_settings_override" "hrryio_settings" {
     always_online            = "off"
     automatic_https_rewrites = "off"
     max_upload               = 100 # megabytes (default 100, any bigger is behind a paywall)
-    minify {
-      css  = "off"
-      js   = "off"
-      html = "off"
-    }
+    # minify {
+    #   css  = "off"
+    #   js   = "off"
+    #   html = "off"
+    # }
     # Ingress does SNI routing. So make origin requests using ssl
     ssl = "strict"
   }
@@ -31,7 +31,7 @@ resource "cloudflare_record" "hrry_io_dns" {
     "ip",
   ])
   name    = each.key
-  value   = "_homelab.${cloudflare_zone.hrry_io.zone}"
+  content = "_homelab.${cloudflare_zone.hrry_io.zone}"
   type    = "CNAME"
   proxied = true
   ttl     = 1
@@ -41,7 +41,7 @@ resource "cloudflare_record" "hrry_io_dns" {
 
 resource "cloudflare_record" "hrry_io_github_pages" {
   name    = "web"
-  value   = "harrybrwn.github.io"
+  content = "harrybrwn.github.io"
   type    = "CNAME"
   proxied = false
   ttl     = 120

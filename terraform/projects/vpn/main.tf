@@ -12,7 +12,7 @@ terraform {
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "~> 4.34.0"
+      version = "~> 4.47.0"
     }
   }
 }
@@ -77,7 +77,7 @@ resource "cloudflare_record" "vpn" {
   zone_id = data.cloudflare_zone.hrry_dev.id
   type    = "A"
   name    = "vpn"
-  value   = module.vpn.public_ip
+  content = module.vpn.public_ip
   proxied = false
   ttl     = 60
 }

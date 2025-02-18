@@ -44,6 +44,7 @@ resource "cloudflare_email_routing_rule" "hrry_me" {
     "trash3",
     "trash4",
     "trash5",
+    "void",
   ])
   zone_id = local.zones.hrry_me
   enabled = true
@@ -70,7 +71,7 @@ resource "cloudflare_record" "ahasend_mail_hrry_me_cname" {
   }
   type    = "CNAME"
   name    = each.key
-  value   = each.value
+  content = each.value
   proxied = false
   ttl     = 60
   comment = "Created by terraform."
@@ -80,7 +81,7 @@ resource "cloudflare_record" "ahasend_mail_hrry_me_cname" {
 resource "cloudflare_record" "ahasend_mail_hrry_me_txt" {
   type    = "TXT"
   name    = "_dmarc.mail"
-  value   = "v=DMARC1; p=reject; sp=none; adkim=r; aspf=r;"
+  content = format("%q", "v=DMARC1; p=reject; sp=none; adkim=r; aspf=r;")
   proxied = false
   ttl     = 60
   comment = "Created by terraform."

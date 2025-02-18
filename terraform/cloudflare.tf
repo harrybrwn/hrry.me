@@ -22,7 +22,7 @@ resource "cloudflare_record" "homelab_gateway" {
   ])
   zone_id = each.key
   name    = "_homelab"
-  value   = var.gateway_ip
+  content = var.gateway_ip
   type    = "A"
   proxied = true
   ttl     = 1 # proxied records require ttl of 1
@@ -36,7 +36,7 @@ resource "cloudflare_record" "root_dns" {
   ])
   zone_id = each.key
   name    = "@" # root domain only
-  value   = var.gateway_ip
+  content = var.gateway_ip
   type    = "A"
   proxied = true
   ttl     = 1 # proxied records require ttl of 1
@@ -55,13 +55,13 @@ resource "cloudflare_email_routing_address" "tanya_email_destination" {
 resource "cloudflare_email_routing_rule" "harry" {
   for_each = toset(concat(
     [
-    "cloudflare-notifications",
-    # "harry",
-    # "admin",
-    "ynvybmvyigvtywlscg",
-    "trash",
+      "cloudflare-notifications",
+      # "harry",
+      # "admin",
+      "ynvybmvyigvtywlscg",
+      "trash",
     ],
-    flatten([ for i in range(4): "trash${i + 1}" ])
+    flatten([for i in range(4) : "trash${i + 1}"])
   ))
   zone_id = local.zones.harrybrwn_com
   enabled = true

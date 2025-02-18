@@ -24,7 +24,7 @@ resource "cloudflare_email_routing_settings" "willmusic_education" {
 
 resource "cloudflare_record" "willmusic_education_dns" {
   name    = "@"
-  value   = var.gateway_ip
+  content = var.gateway_ip
   type    = "A"
   proxied = true
   ttl     = 1

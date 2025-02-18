@@ -8,7 +8,7 @@ resource "cloudflare_record" "hrry_dev_dns" {
     "auth",
   ])
   name    = each.key
-  value   = "_homelab.hrry.dev"
+  content = "_homelab.hrry.dev"
   type    = "CNAME"
   proxied = true
   ttl     = 1 # proxied records require ttl of 1
@@ -23,7 +23,7 @@ resource "cloudflare_record" "hrry_dev_private" {
     "s3",
   ])
   name    = each.key
-  value   = var.private_gateway_ip
+  content = var.private_gateway_ip
   type    = "A"
   proxied = false
   ttl     = 60
@@ -38,7 +38,7 @@ resource "cloudflare_record" "hrry_dev_dns_staging" {
     "*.stg",
   ])
   name    = each.key
-  value   = var.staging_ip
+  content = var.staging_ip
   type    = "A"
   proxied = false
   ttl     = 3600

@@ -4,7 +4,8 @@ resource "cloudflare_zone_settings_override" "hrry_me_settings" {
     always_online            = "on"
     automatic_https_rewrites = "on"
     browser_cache_ttl        = 24 * 60 * 60 # browser cache in seconds
-    # Ingress does SNI routing. So make origin requests using ssl
+    # Ingress does SNI routing. So make origin requests using ssl by configuring
+    # to "strict"
     ssl = "strict"
   }
 }
@@ -16,7 +17,7 @@ resource "cloudflare_zone_dnssec" "hrry_me_dnssec" {
 resource "cloudflare_record" "netlify" {
   type    = "CNAME"
   name    = "@"
-  value   = "apex-loadbalancer.netlify.com"
+  content = "apex-loadbalancer.netlify.com"
   proxied = false
   ttl     = 60
   comment = "Created by terraform."
@@ -26,7 +27,7 @@ resource "cloudflare_record" "netlify" {
 resource "cloudflare_record" "netlify_www" {
   type    = "CNAME"
   name    = "www"
-  value   = "apex-loadbalancer.netlify.com"
+  content = "apex-loadbalancer.netlify.com"
   proxied = false
   ttl     = 60
   comment = "Created by terraform."
@@ -45,7 +46,7 @@ resource "cloudflare_record" "hrry_me_dns" {
     "*.bsky",
   ])
   name    = each.key
-  value   = var.gateway_ip
+  content = var.gateway_ip
   type    = "A"
   proxied = true
   ttl     = 1
@@ -60,7 +61,7 @@ resource "cloudflare_record" "hrry_me_dns_staging" {
     "*.stg",
   ])
   name    = each.key
-  value   = var.staging_ip
+  content = var.staging_ip
   type    = "A"
   proxied = false
   ttl     = 60
@@ -87,7 +88,7 @@ resource "cloudflare_email_routing_settings" "hrry_me" {
 resource "cloudflare_record" "gh_pages_domain_verify" {
   type    = "TXT"
   name    = "_github-pages-challenge-harrybrwn"
-  value   = var.gh_pages_domain_verify_codes.hrry_me
+  content = var.gh_pages_domain_verify_codes.hrry_me
   proxied = false
   ttl     = 1 # auth ttl
   comment = "Created by terraform."

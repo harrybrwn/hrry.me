@@ -11,7 +11,7 @@ resource "cloudflare_zone_dnssec" "h3y_sh_dnssec" {
 
 # resource "cloudflare_record" "mastodon_local" {
 #   name    = "toots"
-#   value   = var.private_ip
+#   content   = var.private_ip
 #   type    = "A"
 #   proxied = false
 #   ttl     = 60

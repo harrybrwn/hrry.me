@@ -1,6 +1,6 @@
 resource "cloudflare_record" "minecraft_server" {
   name    = "mc"
-  value   = var.gateway_ip
+  content = var.gateway_ip
   type    = "A"
   proxied = false
   ttl     = 120 # seconds
@@ -10,7 +10,7 @@ resource "cloudflare_record" "minecraft_server" {
 
 resource "cloudflare_record" "minecraft_server_local" {
   name    = "local.mc"
-  value   = "10.0.0.14"
+  content = "10.0.0.14"
   type    = "A"
   proxied = false
   ttl     = 120 # seconds
