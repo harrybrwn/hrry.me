@@ -94,12 +94,6 @@ jobs:
       id: api-source-hash
       run: echo "source-hash=$(scripts/sourcehash.sh --lang go -e '*_test.go')" >> "$GITHUB_OUTPUT"
 
-    - name: Clone Bluesky PDS
-      uses: actions/checkout@v4
-      with:
-        repository: bluesky-social/pds
-        ref: "v0.4.74"
-        path: ./.build/docker/pds
     - name: Build Images
       env:
         GIT_COMMIT: ${{ github.sha }}
