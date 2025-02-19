@@ -46,7 +46,7 @@ charts/minio:
 
 .PHONY: charts/pds
 charts/pds:
-	@if [ ! -L charts/pds ]; then ln -s "$$HOME/dev/bluesky/pds/chart" charts/pds; fi
+	@if [ ! -L charts/pds ]; then ln -s "$$HOME/dev/bsky/pds/chart" charts/pds; fi
 
 clone:
 	@if [ ! -d charts/mastodon ]; then \

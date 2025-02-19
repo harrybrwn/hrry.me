@@ -23,6 +23,7 @@ secretGenerator:
     behavior: create
     envs:
       - env/bluesky-pds-s3.env
+      - env/email.env
 
 configMapGenerator:
   - name: pds

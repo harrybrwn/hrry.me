@@ -483,7 +483,8 @@ target "rust" {
             #{ v = "1.77.2", base = "alpine3.18", latest = false },
             #{ v = "1.78.0", base = "alpine3.18", latest = false },
             { v = "1.82.0", base = "alpine3.20", latest = false },
-            { v = "1.83.0", base = "alpine3.20", latest = true },
+            { v = "1.83.0", base = "alpine3.20", latest = false },
+            { v = "1.84.0", base = "alpine3.20", latest = true },
         ]
     }
     context = "config/docker/rust"

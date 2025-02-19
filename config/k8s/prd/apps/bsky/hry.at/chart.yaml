@@ -1,0 +1,95 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: pds
+  namespace: kube-system
+spec:
+  chart: pds
+  repo: https://helm.hrry.dev
+  targetNamespace: bskypds-hryat
+  set:
+    config.hostname: 'hry.at'
+  valuesContent: |-
+    config:
+      dataDirectory: /pds
+      adminPassword:
+        secretKeyRef:
+          name: pds-secrets
+          key: admin-password
+      jwtSecret:
+        secretKeyRef:
+          name: pds-secrets
+          key: jwt-secret
+      plcRotationKeyK256PrivateKeyHex:
+        secretKeyRef:
+          name: pds-secrets
+          key: plc-rotation-key-K256-private-key
+      blobstore:
+        s3:
+          bucket: bsky-pds-hry-at
+          region: us-east-1
+          forcePathStyle: 'true'
+          endpoint: http://minio.minio.svc.cluster.local:9000
+          accessKeyId:
+            secretKeyRef:
+              name: pds-secrets
+              key: access-key-id
+          secretAccessKey:
+            secretKeyRef:
+              name: pds-secrets
+              key: secret-access-key
+      email:
+        from: bsky@mail.hrry.me
+        smtpUrl:
+          secretKeyRef:
+            name: pds-secrets
+            key: smtp-url
+      logLevel: 'debug'
+
+    traefikIngress:
+      enabled: false
+      #namespace: default
+      entryPoints: [websecure]
+    certificate:
+      secretName: hry-at-tls
+      issuerRef:
+        name: ca-issuer
+        kind: ClusterIssuer
+        group: cert-manager.io # this is the default
+      subject:
+        organizationalUnits: [homelab]
+
+    volumeMounts:
+      - name: pds-data
+        mountPath: /pds
+    volumes:
+      # HostPath is quite a bit faster than NFS volumes.
+      - name: pds-data
+        hostPath:
+          type: DirectoryOrCreate
+          path: /opt/bsky/hry.at/pds/data
+    resources:
+      requests:
+        cpu: 500m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    autoscaling:
+      enabled: false
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: "kubernetes.io/arch"
+              operator: In
+              values: ["amd64"]
+            - key: "hrry.me/bsky-pds"
+              operator: In
+              values: ["true"]
+    tolerations:
+    - key: "arch"
+      operator: "Equal"
+      value: "arm64"
+      effect: "NoSchedule"

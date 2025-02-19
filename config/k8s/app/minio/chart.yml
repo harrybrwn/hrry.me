@@ -172,7 +172,9 @@ spec:
             principal:
               AWS: ["*"]
             actions: ["s3:GetBucketLocation", "s3:ListBucket"]
-            resources: ["arn:aws:s3:::bsky-pds"]
+            resources:
+              - "arn:aws:s3:::bsky-pds"
+              - "arn:aws:s3:::bsky-pds-hry-at"
           - effect: Allow
             principal:
               AWS: ["*"]
@@ -180,6 +182,7 @@ spec:
               - "s3:*"
             resources:
               - "arn:aws:s3:::bsky-pds/*"
+              - "arn:aws:s3:::bsky-pds-hry-at/*"
 
     users:
       - accessKey: loki
@@ -238,6 +241,8 @@ spec:
       - name: wordpress
         policy: private
       - name: bsky-pds
+        policy: private
+      - name: bsky-pds-hry-at
         policy: private
 
     customCommands:

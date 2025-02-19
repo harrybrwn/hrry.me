@@ -1,0 +1,14 @@
+resources:
+  - chart.yaml
+  - ns.yaml
+
+secretGenerator:
+  - name: pds-secrets
+    namespace: bskypds-hryat
+    behavior: create
+    envs:
+      - env/pds.env
+      - env/pds-s3.env
+      - env/email.env
+    options:
+      disableNameSuffixHash: true
