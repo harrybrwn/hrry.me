@@ -14,7 +14,8 @@ resources:
   - ../../app/lnsmol
   - geoip
   - ../../app/bluesky
-  - bskypds
+  - bsky/hry.at
+  - bsky/pds.hrry.me
 
 images:
   - name: 10.0.0.11:5000/harrybrwn/grafana:latest

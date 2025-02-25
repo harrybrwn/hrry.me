@@ -1,7 +1,7 @@
 resources:
   - ingress.yml
   - certificate.yml
-  - ../../../app/bluesky/pds
+  - ../../../../app/bluesky/pds
 
 patches:
   - target:
