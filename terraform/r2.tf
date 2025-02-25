@@ -20,3 +20,21 @@ resource "aws_s3_bucket" "registry-bucket" {
   provider = aws.cloudflare
   bucket   = "container-registry"
 }
+
+# Public Files Bucket.
+
+resource "aws_s3_bucket" "pub" {
+  provider = aws.cloudflare
+  bucket   = "pub"
+}
+
+resource "aws_s3_bucket_cors_configuration" "pub" {
+  bucket   = aws_s3_bucket.pub.id
+  provider = aws.cloudflare
+
+  cors_rule {
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+  }
+}
+
