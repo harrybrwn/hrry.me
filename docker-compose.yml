@@ -393,6 +393,23 @@ services:
     depends_on:
       - db
 
+  mkdocs:
+    build:
+      context: .
+      target: mkdocs
+    develop:
+      watch:
+        - action: sync
+          path: ./docs
+          target: /opt/hrry.me/docs
+        - action: sync
+          path: mkdocs.yml
+          target: /opt/hrry.me/mkdocs.yml
+        # - action: rebuild
+        #   path: mkdocs.yml
+    ports:
+      - '8000:8000'
+
 volumes:
   database:
   cache-data:

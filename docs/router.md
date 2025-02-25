@@ -2,6 +2,12 @@
 
 ## Firewall
 
+## SSH Keys
+
+- Only rsa keys are supported
+- Add `PubkeyAcceptedKeyTypes +ssh-rsa` to `~/.ssh/config` to force it to accept
+  the rsa key.
+
 ### Notes
 
 The `input` chain is for traffic to the router, `forward` chain is for traffic

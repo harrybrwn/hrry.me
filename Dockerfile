@@ -10,7 +10,7 @@ ARG RUST_VERSION=1.71.1
 #
 # Frontend Build
 #
-FROM node:${NODE_VERSION} as frontend
+FROM node:${NODE_VERSION} AS frontend
 ARG TARGETPLATFORM
 RUN --mount=type=cache,id=node-apk-${TARGETPLATFORM},target=/var/cache/apk \
     apk update  && \
@@ -47,19 +47,19 @@ COPY ./cmd/hooks/*.html ./cmd/hooks/
 #
 # Raw Frontend Output
 #
-FROM scratch as raw-frontend
+FROM scratch AS raw-frontend
 COPY --from=frontend /opt/harrybrwn/build /
 
 #
 # Wait script
 #
-FROM scratch as wait
+FROM scratch AS wait
 COPY ./scripts/wait.sh /bin/wait.sh
 
 #
 # Golang builder
 #
-FROM golang:${GO_VERSION} as builder
+FROM golang:${GO_VERSION} AS builder
 RUN --mount=type=cache,id=golang-apk,target=/var/cache/apk \
     apk update && apk add git
 RUN --mount=type=cache,id=gobuild,target=/root/.cache/go-build \
@@ -82,55 +82,55 @@ COPY --from=frontend /opt/harrybrwn/build/harrybrwn.com build/harrybrwn.com/
 COPY --from=frontend /opt/harrybrwn/frontend/legacy/embeds.go ./frontend/legacy/embeds.go
 COPY --from=frontend /opt/harrybrwn/frontend/legacy/pages ./frontend/legacy/pages
 
-FROM builder as api-builder
+FROM builder AS api-builder
 COPY cmd/api cmd/api
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/harrybrwn ./cmd/api
 
-FROM builder as legacy-site-builder
+FROM builder AS legacy-site-builder
 COPY cmd/legacy-site cmd/legacy-site
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/legacy-site ./cmd/legacy-site
 
-FROM builder as backups-builder
+FROM builder AS backups-builder
 COPY cmd/backups cmd/backups
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/backups ./cmd/backups
 
-FROM builder as hooks-builder
+FROM builder AS hooks-builder
 COPY cmd/hooks cmd/hooks
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/hooks ./cmd/hooks
 
-FROM builder as geoip-builder
+FROM builder AS geoip-builder
 COPY services/go-geoip services/go-geoip
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/geoip ./services/go-geoip
 
-FROM builder as vanity-imports-builder
+FROM builder AS vanity-imports-builder
 COPY cmd/vanity-imports cmd/vanity-imports
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/vanity-imports ./cmd/vanity-imports
 
-FROM builder as provision-builder
+FROM builder AS provision-builder
 COPY cmd/provision cmd/provision
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/provision ./cmd/provision
 
-FROM builder as registry-auth-builder
+FROM builder AS registry-auth-builder
 COPY cmd/registry-auth cmd/registry-auth
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
     go build -ldflags "${LINK}" -o bin/registry-auth ./cmd/registry-auth
 
-FROM builder as geoipupdate-go-builder
+FROM builder AS geoipupdate-go-builder
 COPY cmd/geoipupdate/main.go cmd/geoipupdate/main.go
 RUN --mount=type=cache,id=gobuild,target=/root/.cache \
     --mount=type=cache,id=gomod,target=/go/pkg/mod \
@@ -139,14 +139,14 @@ RUN --mount=type=cache,id=gobuild,target=/root/.cache \
 #
 # Base service
 #
-FROM alpine:${ALPINE_VERSION} as service
+FROM alpine:${ALPINE_VERSION} AS service
 RUN apk update && apk upgrade && apk add -l tzdata curl ca-certificates
 COPY --from=wait /bin/wait.sh /usr/local/bin/wait.sh
 
 #
 # Main image
 #
-FROM service as api
+FROM service AS api
 LABEL maintainer="Harry Brown <harry@harrybrwn.com>"
 COPY scripts/wait.sh /usr/local/bin/wait.sh
 COPY --from=api-builder /opt/harrybrwn/bin/harrybrwn /app/harrybrwn
@@ -156,7 +156,7 @@ ENTRYPOINT ["/app/harrybrwn"]
 #
 # Build hook server
 #
-FROM service as hooks
+FROM service AS hooks
 RUN apk update && apk upgrade && apk add -l tzdata
 COPY scripts/wait.sh /usr/local/bin/wait.sh
 COPY --from=hooks-builder /opt/harrybrwn/bin/hooks /app/hooks
@@ -166,7 +166,7 @@ ENTRYPOINT ["/app/hooks"]
 #
 # Database Backup service
 #
-FROM service as backups
+FROM service AS backups
 RUN apk add postgresql-client
 COPY --from=backups-builder /opt/harrybrwn/bin/backups /usr/local/bin/
 ENTRYPOINT ["backups"]
@@ -174,7 +174,7 @@ ENTRYPOINT ["backups"]
 #
 # GeoIP API
 #
-FROM service as go-geoip
+FROM service AS go-geoip
 RUN mkdir -p /opt/geoip
 COPY files/mmdb/2023-04-27/GeoLite2* /opt/geoip/
 COPY --from=geoip-builder /opt/harrybrwn/bin/geoip /usr/local/bin/
@@ -184,14 +184,14 @@ CMD ["--file=file:///opt/geoip/GeoLite2-City.mmdb", "--file=file:///opt/geoip/Ge
 #
 # Go package vanity imports
 #
-FROM service as vanity-imports
+FROM service AS vanity-imports
 COPY --from=vanity-imports-builder /opt/harrybrwn/bin/vanity-imports /usr/local/bin/
 ENTRYPOINT ["vanity-imports"]
 
 #
 # My old website
 #
-FROM service as legacy-site
+FROM service AS legacy-site
 COPY --from=frontend /opt/harrybrwn/frontend/legacy/templates /opt/harrybrwn/templates
 COPY --from=legacy-site-builder /opt/harrybrwn/bin/legacy-site /usr/local/bin/
 ENTRYPOINT ["legacy-site", "--templates", "/opt/harrybrwn/templates"]
@@ -199,14 +199,14 @@ ENTRYPOINT ["legacy-site", "--templates", "/opt/harrybrwn/templates"]
 #
 # geoipupdate-go
 #
-FROM service as geoipupdate-go
+FROM service AS geoipupdate-go
 COPY --from=geoipupdate-go-builder /opt/harrybrwn/bin/geoipupdate /usr/local/bin/
 ENTRYPOINT [ "geoipupdate" ]
 
 #
 # registry auth service
 #
-FROM service as registry-auth
+FROM service AS registry-auth
 COPY --from=registry-auth-builder /opt/harrybrwn/bin/registry-auth /usr/local/bin/
 ENTRYPOINT ["registry-auth"]
 
@@ -268,7 +268,7 @@ ENTRYPOINT [ "geoipupdate" ]
 #######################
 # geoip
 #######################
-FROM alpine:${ALPINE_VERSION} as geoip-rs
+FROM alpine:${ALPINE_VERSION} AS geoip-rs
 RUN apk -U add ca-certificates && rm -rf /var/cache/apk
 COPY --from=rust-builder /usr/local/bin/geoip /usr/bin/
 ENTRYPOINT [ "geoip" ]
@@ -276,7 +276,7 @@ ENTRYPOINT [ "geoip" ]
 #######################
 # lnsmol
 #######################
-FROM alpine:${ALPINE_VERSION} as lnsmol
+FROM alpine:${ALPINE_VERSION} AS lnsmol
 RUN apk -U add ca-certificates && rm -rf /var/cache/apk
 COPY --from=rust-builder /usr/local/bin/lnsmol /usr/bin/
 ENTRYPOINT [ "lnsmol" ]
@@ -284,7 +284,7 @@ ENTRYPOINT [ "lnsmol" ]
 #######################
 # gopkg
 #######################
-FROM alpine:${ALPINE_VERSION} as gopkg-rs
+FROM alpine:${ALPINE_VERSION} AS gopkg-rs
 RUN apk -U add ca-certificates && rm -rf /var/cache/apk
 COPY --from=rust-builder /usr/local/bin/gopkg /usr/bin/
 ENTRYPOINT [ "gopkg" ]
@@ -300,7 +300,7 @@ ENTRYPOINT [ "gopkg" ]
 #
 # mkdocs
 #
-FROM squidfunk/mkdocs-material:9.5.18 as mkdocs
+FROM squidfunk/mkdocs-material:9.5.18 AS mkdocs
 WORKDIR /opt/hrry.me/
 COPY mkdocs.yml ./
 COPY docs/ docs/
@@ -309,7 +309,7 @@ RUN mkdocs build
 #####################
 # Webserver Frontend
 #####################
-FROM harrybrwn/nginx:${NGINX_VERSION} as nginx
+FROM harrybrwn/nginx:${NGINX_VERSION} AS nginx
 ENV REGISTRY_UI_ROOT=/var/www/registry.hrry.dev
 RUN --mount=type=cache,id=nginx-apk,target=/var/cache/apk \
     apk update && \
@@ -334,7 +334,7 @@ COPY frontend/mike /var/www/mike.hrry.me
 #
 # Registry UI
 #
-FROM nginx:${NGINX_VERSION} as registry-ui
+FROM nginx:${NGINX_VERSION} AS registry-ui
 ENV REGISTRY_UI_ROOT=${REGISTRY_UI_ROOT}
 COPY --from=frontend /opt/docker-registry-ui/dist ${REGISTRY_UI_ROOT}
 COPY --from=frontend /opt/docker-registry-ui/favicon.ico ${REGISTRY_UI_ROOT}/

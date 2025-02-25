@@ -19,6 +19,8 @@ type SAMLOptions struct {
 	Path               string
 	CookieName         string
 	DefaultRedirectURI string
+	EntityID           string
+	Insecure           bool
 }
 
 func NewSAMLService(opts *SAMLOptions) (*SAMLService, error) {
@@ -37,14 +39,19 @@ func NewSAMLService(opts *SAMLOptions) (*SAMLService, error) {
 	if !certutil.IsRSA(key) {
 		return nil, errors.New("expected RSA key")
 	}
+	u := url.URL{
+		Scheme: "https",
+		Host:   opts.Host,
+		Path:   opts.Path,
+	}
+	if opts.Insecure {
+		u.Scheme = "http"
+	}
 	mw, err := samlsp.New(samlsp.Options{
-		SignRequest:       true,
-		AllowIDPInitiated: true,
-		URL: url.URL{
-			Scheme: "https",
-			Host:   opts.Host,
-			Path:   opts.Path,
-		},
+		SignRequest:        true,
+		AllowIDPInitiated:  true,
+		EntityID:           opts.EntityID,
+		URL:                u,
 		Key:                key.(*rsa.PrivateKey),
 		Certificate:        crt,
 		CookieName:         opts.CookieName,
@@ -96,6 +103,7 @@ func (so *SAMLOptions) defaults() {
 		{"API_SAML_CERT_FILE", &so.CertFile, ""},
 		{"API_SAML_KEY_FILE", &so.KeyFile, ""},
 		{"API_SAML_REDIRECT_URI", &so.DefaultRedirectURI, ""},
+		{"API_SAML_ENTITY_ID", &so.EntityID, ""},
 	} {
 		if len(*kv.val) == 0 {
 			*kv.val = getenv(kv.key, kv.deflt)
