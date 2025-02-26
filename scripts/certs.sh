@@ -219,6 +219,11 @@ while [ $# -gt 0 ]; do
 	esac
 done
 
+if ! type -P certutil; then
+  echo -e "[ \e[31merror\e[0m ] Error: command 'certutil' not found. run 'sudo apt install libnss3-tools'" 1>&2
+  exit 1
+fi
+
 if ${CHECK}; then
 	cert_created -cn "harrybrwn.com"
 	cert_created -cn "hrry.me"

@@ -79,7 +79,7 @@ if ! grep 'harrybrwn.local' /etc/hosts > /dev/null 2>&1; then
 	error configure "Local DNS configuration needed:"
 	echo
 	echo "Run the following:"
-	printf ' $ echo "127.0.0.1 harrybrwn.local\n127.0.0.1 home.harrybrwn.local" sudo tee -a /etc/hosts'
+	printf ' $ echo "127.0.0.1 harrybrwn.local\n127.0.0.1 home.harrybrwn.local" | sudo tee -a /etc/hosts'
   echo
 	echo
 	exit 1
@@ -87,6 +87,10 @@ fi
 
 if ! certutil -L -d "$CERTDB" -n "$LOCAL_CERT_NAME" > /dev/null 2>&1; then
 	error configure "Error: Local certificate '$LOCAL_CERT_NAME' not installed!"
+  echo
+  echo "Run the following:"
+  echo
+  echo "certutil -A -d \"$CERTDB\" -n '$LOCAL_CERT_NAME' -t 'CT,C,C' -i ./config/pki/certs/ca.crt"
 	exit 1
 fi
 
@@ -111,4 +115,23 @@ done
 
 setup_local_tooling
 
-echo -e "${CYAN}Configuration looks good.${NOCOL}"
+REGISTRY_CRT_DST='/etc/docker/certs.d/10.0.0.11:5000/ca.crt'
+if [ ! -f "${REGISTRY_CRT_DST}" ]; then
+  info configure The registry certificate is not installed.
+  # echo "Do you want to install it? (Y/n): "
+  read -n1 -p "Do you wan to install it? (Y/n): " answer
+  echo
+  case "$answer" in
+    y|Y)
+      # echo '$'
+      with_sudo mkdir -p /etc/docker/certs.d/10.0.0.11:5000/
+      with_sudo cp config/registry-ca.crt "${REGISTRY_CRT_DST}"
+      info configure installed to "${REGISTRY_CRT_DST}"
+      ;;
+    *)
+      info configure skipping registry certificate
+      ;;
+  esac
+fi
+
+echo -e "${CYAN}Ok configuration looks good.${NOCOL}"

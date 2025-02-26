@@ -7,9 +7,10 @@ help:
 	@echo Makefile for hrry.me
 	@echo
 	@echo 'Targets'
-	@echo '  help    print this help message'
-	@echo '  tools   build the tooling'
-	@echo '  init    initialize the environment for builds and management'
+	@echo '  help        print this help message'
+	@echo '  tools       build the tooling'
+	@echo '  init        initialize the environment for builds and management'
+	@echo '  configure   configure a dev environment'
 	@echo
 	@echo 'Variables'
 	@echo '  ENV     environment (default: "production")'
@@ -18,6 +19,9 @@ init:
 	terraform -chdir=terraform init
 	terraform/projects/homelab/tf init
 	yarn
+
+configure:
+	@scripts/configure.sh
 
 build: tools
 	bin/bake --local --load

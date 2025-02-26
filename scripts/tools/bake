@@ -33,10 +33,6 @@ get_platform() {
   echo -n "${_kernel}/${_arch}"
 }
 
-pds_version() {
-  jq -r '.dependencies."@atproto/pds"' services/pds/package.json | sed -e 's/\^//g'
-}
-
 usage() {
   echo "bake [flags...] [-- [buildx-args...]]"
   echo
@@ -130,17 +126,11 @@ if [ -n "${platform}" ]; then
   args+=("--set" "*.platform=${platform}")
 fi
 
-if [ -z "${PDS_VERSION_TAG:-}" ]; then
-  PDS_VERSION_TAG=$(pds_version)
-fi
-export PDS_VERSION_TAG
-
 if ${verbose}; then
   echo "GIT_TAG=$GIT_TAG"
   echo "GIT_BRANCH=$GIT_BRANCH"
   echo "GIT_COMMIT=$GIT_COMMIT"
   echo "SOURCE_HASH=$SOURCE_HASH"
-  echo "PDS_VERSION_TAG=${PDS_VERSION_TAG}"
 fi
 
 REGISTRY="$REG" docker buildx bake -f config/docker/docker-bake.hcl "${args[@]}"

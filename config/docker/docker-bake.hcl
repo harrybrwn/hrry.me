@@ -41,8 +41,6 @@ variable "FLUENTBIT_VERSION" {
     #default = "2.0.6"
 }
 
-variable "PDS_VERSION_TAG" { default = "latest" }
-
 variable "platforms" {
     default = [
         "linux/amd64",

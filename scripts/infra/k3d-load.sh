@@ -48,12 +48,15 @@ for i in "${images[@]}"; do
 done
 
 if ${LIST}; then
-  for i in "${images[@]}"; do info k3d-load "$i"; done
+  info k3d-load "Image names: ${#images[@]}"
+  for i in "${images[@]}"; do echo -e "\t$i"; done
+  info k3d-load "Existing images: ${#existing_images[@]}"
+  for i in "${existing_images[@]}"; do echo -e "\t$i"; done
 else
   for i in "${images[@]}"; do info k3d-load "found image '$i'"; done
   info k3d-load "Loading images \"${existing_images[@]}\""
   if [ ${#existing_images[@]} = 0 ]; then
-    error k3d-load "no images"
+    error k3d-load "no images, try building some with 'bin/bake --local'"
     exit 1
   fi
   k3d image load --cluster "${K3D_CLUSTER}" "${existing_images[@]}"

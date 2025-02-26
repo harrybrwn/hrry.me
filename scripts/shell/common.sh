@@ -20,24 +20,21 @@ has_certutil() {
 }
 
 info() {
-	_log="$1"
+	local _log="$1"
 	shift
-	echo -e "${GREEN}[$_log]${NOCOL} $*"
-	unset _log
+	echo -e "[ ${GREEN}$_log${NOCOL} ] $*"
 }
 
 warn() {
-	_log="$1"
+	local _log="$1"
 	shift
-	echo -e "${YELLOW}[$_log]${NOCOL} $*"
-	unset _log
+	echo -e "[ ${YELLOW}$_log${NOCOL} ] Warn: $*"
 }
 
 error() {
-	_log="$1"
+	local _log="$1"
 	shift
-	echo -e "${RED}[$_log]${NOCOL} $*" 1>&2
-	unset _log
+	echo -e "[ ${RED}$_log${NOCOL} ] Error: $*" 1>&2
 }
 
 list-images() {
@@ -87,4 +84,15 @@ k3d_running() {
   else
     return 1
   fi
+}
+
+with_sudo() {
+  # local cmd="$@"
+  if ! sudo -v -n 2> /dev/null; then
+    echo "Running sudo:"
+    echo
+    echo "\$ sudo $@"
+    sudo -v
+  fi
+  sudo $*
 }
