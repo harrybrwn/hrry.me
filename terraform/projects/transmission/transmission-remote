@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+
+set -eu
+
+ip="$(tofu output -raw ip)"
+auth="$(tofu output -raw auth)"
+
+transmission-remote "${ip}:9091" --auth="$auth" "$@"

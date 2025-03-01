@@ -26,6 +26,7 @@ resource "aws_security_group" "vpn" {
   vpc_id = var.vpc_id
   tags   = local.tags
 
+  # allow incoming vpn traffic
   ingress {
     from_port        = 1194
     to_port          = 1194
@@ -34,6 +35,7 @@ resource "aws_security_group" "vpn" {
     ipv6_cidr_blocks = var.ipv6 ? ["::/0"] : []
   }
 
+  # Allow incoming ssh traffic
   ingress {
     from_port        = var.ssh_port
     to_port          = var.ssh_port

@@ -1,0 +1,51 @@
+global:
+  enabled: true
+  tlsDisable: true
+server:
+  dataStorage:
+    enabled: true
+    size: 2Gi
+  ha:
+    replicas: 3
+    raft:
+      enabled: true
+      setNodeId: true
+      config: |-
+        ui = true
+        listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_disable = true
+        }
+        # Variables set using environment variables.
+        seal "awskms" {}
+
+        storage "raft" {
+          path = "/vault/data"
+          retry_join {
+            leader_api_addr = "http://vault-0.vault-internal:8200"
+          }
+          retry_join {
+            leader_api_addr = "http://vault-1.vault-internal:8200"
+          }
+          retry_join {
+            leader_api_addr = "http://vault-2.vault-internal:8200"
+          }
+        }
+  extraSecretEnvironmentVars:
+    - envName: AWS_ACCESS_KEY_ID
+      secretKey: AWS_ACCESS_KEY_ID
+      secretName: vault-iam
+    - envName: AWS_SECRET_ACCESS_KEY
+      secretKey: AWS_SECRET_ACCESS_KEY
+      secretName: vault-iam
+    - envName: VAULT_AWSKMS_SEAL_KEY_ID
+      secretKey: VAULT_AWSKMS_SEAL_KEY_ID
+      secretName: vault-iam
+    - envName: AWS_REGION
+      secretKey: AWS_REGION
+      secretName: vault-iam
+ui:
+  serviceType: "LoadBalancer"
+  serviceNodePort: null
+  externalPort: 8200

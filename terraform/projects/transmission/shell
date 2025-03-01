@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+
+ssh -t -i keys/transmission ubuntu@$(tofu output -raw ip) tmux new -A -s debug
