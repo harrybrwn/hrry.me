@@ -16,7 +16,7 @@ spec:
       containers:
         - name: grafana
           image: "10.0.0.11:5000/harrybrwn/grafana:latest"
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
               cpu: "100m"

@@ -110,7 +110,7 @@ if ! docker buildx use "$BUILDKIT_NAME" ; then
             CREATE_FLAGS="$CREATE_FLAGS --config $BUILDKIT_CONFIG"
         fi
     fi
-    docker buildx create "$CREATE_FLAGS"
+    docker buildx create ${CREATE_FLAGS}
     docker buildx inspect --bootstrap
     docker run --privileged --rm tonistiigi/binfmt --install all
 fi
@@ -130,6 +130,9 @@ install_certificate() {
     if [ "${status}" = "stopped" ]; then
       docker container start "${container_name}"
     fi
+    echo docker container cp "${cert}" "${container_name}:/usr/local/share/ca-certificates/${BUILDKIT_NAME}-${name}.crt"
+    docker container exec "${container_name}" apk add -U ca-certificates
+    docker container exec "${container_name}" mkdir -p /usr/local/share/ca-certificates/
     docker container cp "${cert}" "${container_name}:/usr/local/share/ca-certificates/${BUILDKIT_NAME}-${name}.crt"
     if [ -f config/pki/certs/ca.crt ]; then
       docker container cp config/pki/certs/ca.crt "${container_name}:/usr/local/share/ca-certificates/harrybrwn-local-rootca.crt"
