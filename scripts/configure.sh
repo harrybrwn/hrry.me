@@ -6,6 +6,7 @@ set -euo pipefail
 readonly DIR="$(pwd)/$(dirname "${BASH_SOURCE[0]}")"
 # shellcheck source=scripts/shell/common.sh
 source "$DIR/shell/common.sh"
+COMPONENT=configure
 
 block() {
 	echo
@@ -50,13 +51,9 @@ TOOLS=(
 	k3d
 	kubeseal
 	# Utilities
-	jq
 	mc
 	mockgen
-	git
 	certutil
-	curl
-	openssl
 )
 for tool in "${TOOLS[@]}"; do
 	if ! path="$(type -P "${tool}")"; then
@@ -64,6 +61,29 @@ for tool in "${TOOLS[@]}"; do
 		exit 1
 	fi
 	info configure "Found tool \"${tool}\" -> ${path}"
+done
+
+INSTALLABLE=(
+  shellcheck
+  git
+  curl
+  openssl
+  jq
+)
+for tool in "${INSTALLABLE[@]}"; do
+  if ! path="$(type -P "${tool}")"; then
+    warn configure "Could not find \"${tool}\"."
+    read -n1 -p "Do you want to install \"${tool}\"? (y/n): " y
+    echo
+    if [ "$y" = "y" ]; then
+      with_sudo apt install shellcheck
+    else
+      error configure "Cannot find tool \"${tool}\""
+      exit 1
+    fi
+  else
+    info configure "Found tool \"${tool}\" -> ${path}"
+  fi
 done
 
 docker_plugins="$(docker system info -f json | jq -r '.ClientInfo.Plugins[].Name')"

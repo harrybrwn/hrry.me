@@ -11,6 +11,7 @@ skip_list:
 
 exclude_paths:
   - config/ansible/test.yml
+  - mkdocs.yml
   - .git
   - .github
   - .vscode

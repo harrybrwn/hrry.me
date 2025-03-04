@@ -21,7 +21,7 @@ jobs:
 
       - run: go vet -tags ci ./...
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
           version: v1.52.2
           args: --config ./config/golangci.yml
@@ -35,7 +35,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       # Install node
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: 'frontend/legacy/.nvmrc'
           cache: 'yarn'
@@ -88,7 +88,7 @@ jobs:
       uses: ./.github/actions/install-tools
 
     # Install node
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
         node-version-file: 'frontend/legacy/.nvmrc'
         cache: 'yarn'
@@ -160,7 +160,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Set up QEMU

@@ -76,7 +76,6 @@ all:
     rpi3: { ansible_host: 10.0.0.23, nfs_server: false }
     rpi0: { ansible_host: 10.0.0.40, ansible_ssh_user: pi }
     router:
-      #ansible_host: router.lan
       ansible_host: 10.0.0.1
       ansible_ssh_user: admin
       ansible_connection: ansible.netcommon.network_cli

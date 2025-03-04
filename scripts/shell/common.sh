@@ -91,8 +91,9 @@ with_sudo() {
   if ! sudo -v -n 2> /dev/null; then
     echo "Running sudo:"
     echo
-    echo "\$ sudo $@"
+    echo -e "\$ ${RED}sudo${NOCOL} $@"
     sudo -v
   fi
+  info "${COMPONENT:-common}" "Running sudo: ${RED}sudo${NOCOL} $*"
   sudo $*
 }

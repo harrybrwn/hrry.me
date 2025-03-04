@@ -1,5 +1,3 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook
-
 - name: Configure Router
   ansible.builtin.import_playbook: playbooks/router.yml
 
@@ -23,6 +21,10 @@
         pre_reboot_delay: 0
         post_reboot_delay: 30
         test_command: whoami
+    - name: restart-journald
+      ansible.builtin.systemd:
+        name: systemd-journald
+        state: restarted
   pre_tasks:
     - name: Update apt cache
       ansible.builtin.apt:
@@ -54,13 +56,10 @@
         path: /etc/systemd/journald.conf
         regexp: '^(.*)Storage=(.*)$'
         line: 'Storage=persistent'
-        backrefs: yes
+        backrefs: true
       register: journald_persistent
-    - name: Restart systemd-journald
-      ansible.builtin.systemd:
-        name: systemd-journald
-        state: restarted
-      when: journald_persistent.changed
+      notify:
+        - restart-journald
 
     - name: Set timezone to America/Los_Angeles
       community.general.timezone:

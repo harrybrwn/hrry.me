@@ -40,7 +40,7 @@
   community.mysql.mysql_user:
     name: '{{ item.username }}'
     password: '{{ item.password }}'
-    priv: '{{ item.priv | default(item.username + ".*:ALL")}}'
+    priv: '{{ item.priv | default(item.username + ".*:ALL") }}'
     state: present
     login_host: '{{ ansible_host }}'
     login_port: '3306'

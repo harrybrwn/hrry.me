@@ -58,7 +58,7 @@ services:
     env_file:
       - config/env/db.env
     healthcheck:
-      test: ["CMD-SHELL" , "pg_isready --username harrybrwn -d harrybrwn"]
+      test: ["CMD-SHELL", "pg_isready --username harrybrwn -d harrybrwn"]
       interval: 10s
 
   redis:
@@ -279,7 +279,7 @@ services:
         --city-file /opt/geoip/mmdb/latest/GeoLite2-City.mmdb
         --asn-file /opt/geoip/mmdb/latest/GeoLite2-ASN.mmdb
     ports:
-    - "8087:8087"
+      - "8087:8087"
     volumes:
       - ./files/mmdb/latest:/opt/geoip/mmdb/latest:ro
     networks:
@@ -336,8 +336,8 @@ services:
         - MC_VERSION=RELEASE.2022-05-09T04-08-26Z.fips
     command: ["server", "/data", "--console-address", ":9001"]
     ports:
-      - 9000:9000 # api
-      - 9001:9001 # web ui
+      - 9000:9000  # api
+      - 9001:9001  # web ui
     volumes:
       - s3:/data
     env_file:
