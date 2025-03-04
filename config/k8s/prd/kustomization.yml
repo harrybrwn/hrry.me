@@ -11,9 +11,16 @@ resources:
 patches:
   - target: { kind: Deployment }
     patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/imagePullPolicy
-        value: Always
+      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
+  - target: { kind: StatefulSet }
+    patch: |-
+      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
+  - target: { kind: DaemonSet }
+    patch: |-
+      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
+  - target: { kind: Job }
+    patch: |-
+      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
 
 secretGenerator:
   - name: postgres-monitoring

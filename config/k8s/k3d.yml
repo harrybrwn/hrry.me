@@ -23,6 +23,7 @@ volumes:
       - all
       # - servers
       # - agents
+  - volume: /home/harry/dev/web/hrry.me/config/registry-ca.crt:/etc/docker/ca.crt
 options:
   k3s:
     nodeLabels:
@@ -33,3 +34,11 @@ options:
         nodeFilters: [all]
       - label: hrry.me/wordpress=true
         nodeFilters: [all]
+registries:
+  create:
+    name: homelab
+  config: |
+    configs:
+      "10.0.0.11:5000":
+        tls:
+          ca_file: /etc/docker/ca.crt
