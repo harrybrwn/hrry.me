@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+src="$1"
+case "$src" in
+  -h|-help|--help|help)
+    echo "Usage ./scp [-h|--help] <source> <dest> [scp flags]"
+    exit 0
+    ;;
+esac
+shift
+scp -i keys/transmission "ubuntu@$(tofu output -raw ip):$src" "$@"

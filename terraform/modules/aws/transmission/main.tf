@@ -15,54 +15,10 @@ resource "aws_eip_association" "eip_assoc" {
   allocation_id = aws_eip.ip.id
 }
 
-resource "aws_security_group" "main" {
-  name        = var.project_name
-  description = "Allow inbound and outbound traffic."
-
-  vpc_id = var.vpc_id
-  tags   = local.tags
-
-  # Allow RPC traffic to the transmission-daemon.
-  ingress {
-    from_port        = var.rpc-port
-    to_port          = var.rpc-port
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = var.ipv6 ? ["::/0"] : []
-  }
-
-  # Allow incoming ssh traffic
-  ingress {
-    from_port        = var.ssh_port
-    to_port          = var.ssh_port
-    protocol         = "tcp"
-    cidr_blocks      = [var.ssh_cidr]
-    ipv6_cidr_blocks = var.ipv6 ? ["::/0"] : []
-  }
-
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = -1
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = var.ipv6 ? ["::/0"] : []
-  }
-}
-
-resource "aws_security_group_rule" "ingress_peer_port" {
-  for_each          = toset(["tcp", "udp"])
-  type              = "ingress"
-  security_group_id = aws_security_group.main.id
-  protocol          = each.key
-  from_port         = var.peer-port
-  to_port           = var.peer-port
-  cidr_blocks       = ["0.0.0.0/0"]
-  ipv6_cidr_blocks  = var.ipv6 ? ["::/0"] : []
-}
-
 resource "aws_instance" "main" {
   # count                  = 1 # change to 0 for debugging
   ami                    = var.ami
+  availability_zone      = var.availability_zone
   instance_type          = var.instance_type
   subnet_id              = var.public_subnet_id
   ipv6_address_count     = var.ipv6 ? 1 : 0
@@ -115,6 +71,8 @@ resource "null_resource" "install_daemon" {
         "sudo hostnamectl set-hostname ${aws_instance.main.tags["Name"]}",
         "echo 'net.core.rmem_max = 4194304' | sudo tee -a /etc/sysctl.conf",
         "echo 'net.core.wmem_max = 1048576' | sudo tee -a /etc/sysctl.conf",
+        # TODO uncomment this
+        "echo -e \"net.ipv4.ip_local_port_range = ${local.ephemeral_port_low}\t${local.ephemeral_port_high}\" | sudo tee -a /etc/sysctl.conf",
         "sudo mkdir -p /etc/systemd/system/transmission-daemon.service.d",
       ],
       # if 'ipv6' is false then disable ipv6 on the machine
@@ -157,23 +115,35 @@ resource "null_resource" "systemd_override" {
   }
 }
 
+locals {
+  tmp_settings = "/tmp/settings.json"
+  jq_cmd       = "jq '%s' ${local.tmp_settings} | sponge ${local.tmp_settings}"
+}
+
 resource "null_resource" "setup_config" {
   triggers = {
-    user                  = var.ssh_user
-    port                  = format("%d", var.ssh_port)
-    private_key           = var.private_key_openssh
-    host                  = aws_eip.ip.public_ip
-    blocklist_url         = var.blocklist-url
-    peer_port             = var.peer-port
-    rpc_port              = var.rpc-port
-    rpc_whitelist         = join(",", var.rpc-whitelist)
-    rpc_username          = var.rpc-username
-    rpc_password          = var.rpc-password
-    rpc_enabled           = var.rpc-enabled
-    download_dir          = var.download-dir
-    incomplete_dir        = var.incomplete-dir
-    peer-port-random-high = var.peer-port-random-high
-    peer-port-random-low  = var.peer-port-random-low
+    user                   = var.ssh_user
+    port                   = format("%d", var.ssh_port)
+    private_key            = var.private_key_openssh
+    host                   = aws_eip.ip.public_ip
+    blocklist_url          = var.blocklist-url
+    peer_port              = var.peer-port
+    rpc_port               = var.rpc-port
+    rpc_whitelist          = join(",", var.rpc-whitelist)
+    rpc_username           = var.rpc-username
+    rpc_password           = var.rpc-password
+    rpc_enabled            = var.rpc-enabled
+    rpc-url                = var.rpc-url
+    download_dir           = var.download-dir
+    incomplete-dir         = var.incomplete-dir
+    peer-limit-global      = var.peer-limit-global
+    peer-limit-per-torrent = var.peer-limit-per-torrent
+    peer-port-random-high  = var.peer-port-random-high
+    peer-port-random-low   = var.peer-port-random-low
+    speed-limit-up         = var.speed-limit-up
+    speed-limit-down       = var.speed-limit-down
+    ratio-limit            = var.ratio-limit
+    cache-size-mb          = var.cache-size-mb
   }
   depends_on = [null_resource.install_daemon]
   connection {
@@ -183,11 +153,10 @@ resource "null_resource" "setup_config" {
     private_key = self.triggers.private_key
     host        = self.triggers.host
   }
+
   provisioner "remote-exec" {
     inline = concat(
       [
-        # Pause all
-        "transmission-remote 127.0.0.1:${self.triggers.rpc_port} --auth=${self.triggers.rpc_username}:${self.triggers.rpc_password} --torrent all --stop || true",
         # Stop the daemon so we can configure it.
         "sudo systemctl stop transmission-daemon.service",
         # Create download dir
@@ -200,43 +169,59 @@ resource "null_resource" "setup_config" {
         jq '."peer-port"=${self.triggers.peer_port}
           | ."peer-port-random-high"=${self.triggers.peer-port-random-high}
           | ."peer-port-random-low"=${self.triggers.peer-port-random-low}
+          | ."peer-limit-global"=${self.triggers.peer-limit-global}
+          | ."peer-limit-per-torrent"=${self.triggers.peer-limit-per-torrent}
           | ."download-dir"="${self.triggers.download_dir}"
+          | ."cache-size-mb"=${self.triggers.cache-size-mb}
           | ."rpc-authentication-required"=true
+        %{if self.triggers.rpc_enabled}
           | ."rpc-enabled"=${self.triggers.rpc_enabled}
           | ."rpc-port"=${self.triggers.rpc_port}
           | ."rpc-username"="${self.triggers.rpc_username}"
           | ."rpc-password"="${self.triggers.rpc_password}"
           | ."rpc-whitelist"="${self.triggers.rpc_whitelist}"
+          %{if length(self.triggers.rpc-url) > 0}
+          | ."rpc-url"="${self.triggers.rpc-url}"
+          %{endif}
+        %{else}
+          | ."rpc-enabled"=${self.triggers.rpc_enabled}
+        %{endif}
+        %{if length(self.triggers.blocklist_url) > 0}
+          | ."blocklist-enabled"=true
+          | ."blocklist-url"="${self.triggers.blocklist_url}"
+        %{else}
+          | ."blocklist-enabled"=false
+        %{endif}
+        %{if self.triggers.speed-limit-up > 0}
+          | ."speed-limit-up-enabled"=true
+          | ."speed-limit-up"=${self.triggers.speed-limit-up}
+        %{endif}
+        %{if self.triggers.speed-limit-down > 0}
+          | ."speed-limit-down-enabled"=true
+          | ."speed-limit-down"=${self.triggers.speed-limit-down}
+        %{endif}
+        %{if self.triggers.ratio-limit > 0}
+          | ."ratio-limit-enabled"=true
+          | ."ratio-limit"=${self.triggers.ratio-limit}
+        %{endif}
+        %{if length(self.triggers.incomplete-dir) > 0}
+          | ."incomplete-dir-enabled"=true
+          | ."incomplete-dir"="${self.triggers.incomplete-dir}"
+        %{else}
+          | ."incomplete-dir-enabled"=false
+        %{endif}
           ' /tmp/settings.json | sponge /tmp/settings.json
         EOT
       ],
-      length(self.triggers.blocklist_url) > 0 ? [
-        <<EOT
-        jq '."blocklist-enabled"=true
-          | ."blocklist-url"="${self.triggers.blocklist_url}"
-        ' /tmp/settings.json | sponge /tmp/settings.json
-        EOT
-        ] : [
-        "jq '\"blocklist-enabled\"=false' /tmp/settings.json | sponge /tmp/settings.json",
-      ],
-      length(self.triggers.incomplete_dir) > 0 ? [
-        "sudo mkdir -p ${self.triggers.incomplete_dir}",
-        "sudo chown -R debian-transmission:debian-transmission ${self.triggers.incomplete_dir}",
-        <<EOT
-        jq '."incomplete-dir-enabled"=true
-          | ."incomplete-dir"="${self.triggers.incomplete_dir}"
-        ' /tmp/settings.json | sponge /tmp/settings.json
-        EOT
-        ] : [
-        "jq '.\"incomplete-dir-enabled\"=false' /tmp/settings.json | sponge /tmp/settings.json",
-      ],
+      length(self.triggers.incomplete-dir) > 0 ? [
+        "sudo mkdir -p ${self.triggers.incomplete-dir}",
+        "sudo chown -R debian-transmission:debian-transmission ${self.triggers.incomplete-dir}",
+      ] : [],
       [
         "sudo mv /tmp/settings.json /etc/transmission-daemon/settings.json",
         "sudo chown debian-transmission:debian-transmission /etc/transmission-daemon/settings.json",
         "sudo chmod 0600 /etc/transmission-daemon/settings.json",
-        "sudo systemctl enable --now transmission-daemon.service",
-        # Start paused torrents
-        "transmission-remote 127.0.0.1:${self.triggers.rpc_port} --auth=${self.triggers.rpc_username}:${self.triggers.rpc_password} --torrent all --start || true",
+        "sudo systemctl start transmission-daemon.service",
       ]
     )
   }

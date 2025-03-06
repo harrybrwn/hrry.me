@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+
+declare -A rsync_flags=()
+src=""
+dst=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|-help|--help|help)
+      echo "Usage ./scp [-h|--help] <source> <dest> [scp flags]"
+      echo "---"
+      rsync --help 2>&1
+      exit 0
+      ;;
+    -*)
+      rsync_flags+=("$1")
+      shift
+      ;;
+    *)
+      if [ -n "${src:-}" ]; then
+        dst="$1"
+      else
+        src="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+if [ -z "${src:-}" ]; then
+  echo "Error: no source dir"
+  exit 1
+fi
+if [ -z "${dst:-}" ]; then
+  echo "Error: no destination dir"
+  exit 1
+fi
+
+rsync "${rsync_flags[@]}" --rsh="ssh -i ./keys/transmission" \
+  "ubuntu@torrent.hrry.dev:$src" "$dst"

@@ -20,6 +20,11 @@ variable "incomplete-dir" {
   default = ""
 }
 
+variable "rpc-enabled" {
+  type    = bool
+  default = true
+}
+
 variable "rpc-port" {
   type    = number
   default = 9091
@@ -40,9 +45,9 @@ variable "rpc-whitelist" {
   default = ["127.0.0.1"]
 }
 
-variable "rpc-enabled" {
-  type    = bool
-  default = true
+variable "rpc-url" {
+  type    = string
+  default = ""
 }
 
 variable "peer-port" {
@@ -50,14 +55,46 @@ variable "peer-port" {
   default = 51413
 }
 
+variable "peer-port-random-low" {
+  type    = number
+  default = 49152
+}
+
 variable "peer-port-random-high" {
   type    = number
   default = 65535
 }
 
-variable "peer-port-random-low" {
+variable "peer-limit-global" {
   type    = number
-  default = 49152
+  default = 200
+}
+
+variable "peer-limit-per-torrent" {
+  type    = number
+  default = 50
+}
+
+variable "speed-limit-up" {
+  type        = number
+  description = "Upload speed limit in kB/sec. Disable with negative value."
+  default     = -1
+}
+
+variable "speed-limit-down" {
+  type        = number
+  description = "Download speed limit in kB/sec. Disable with negative value."
+  default     = -1
+}
+
+variable "ratio-limit" {
+  type    = number
+  default = -1
+}
+
+variable "cache-size-mb" {
+  type    = number
+  default = 4
 }
 
 /* AWS Networking */
@@ -74,6 +111,11 @@ variable "ipv6" {
   type        = bool
   default     = false
   description = "Set to 'true' to enable ipv6 networking."
+}
+
+variable "availability_zone" {
+  type    = string
+  default = null
 }
 
 /* EC2 Instance Settings */
@@ -103,9 +145,8 @@ variable "instance_volume_size" {
 
 variable "instance_volumes" {
   type = list(object({
-    volume_id   = number
+    volume_id   = string
     device_name = string
-    mount_path  = optional(string)
   }))
   description = "A list used to generate volume attachments."
   default     = []
