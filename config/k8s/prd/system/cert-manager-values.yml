@@ -8,6 +8,9 @@ spec:
     enabled: true
     namespace: cert-manager
     installCRDs: true
+    config:
+      logging:
+        format: json
     prometheus:
       enabled: true
       servicemonitor:

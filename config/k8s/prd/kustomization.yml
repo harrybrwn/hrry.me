@@ -1,30 +1,40 @@
-commonLabels:
-  environment: prd
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+- includeSelectors: true
+  pairs:
+    environment: prd
 
 resources:
-  - ingress-routes.yml
-  - volumes.yml
-  - system
-  - infra
-  - apps
+- ingress-routes.yml
+- volumes.yml
+- system
+- infra
+- apps
 
 patches:
-  - target: { kind: Deployment }
-    patch: |-
-      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
-  - target: { kind: StatefulSet }
-    patch: |-
-      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
-  - target: { kind: DaemonSet }
-    patch: |-
-      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
-  - target: { kind: Job }
-    patch: |-
-      - { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }
+- patch: '- { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }'
+  target:
+    kind: Deployment
+- patch: '- { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }'
+  target:
+    kind: StatefulSet
+- patch: '- { op: add, value: Always, path: /spec/template/spec/containers/0/imagePullPolicy }'
+  target:
+    kind: DaemonSet
+- patch: |
+    - op: add
+      value: Always
+      path: /spec/template/spec/containers/0/imagePullPolicy
+  target:
+    kind: Job
 
 secretGenerator:
-  - name: postgres-monitoring
-    namespace: prometheus
-    behavior: create
-    envs: [env/postgres-monitoring.env]
-    options: { disableNameSuffixHash: true }
+- behavior: create
+  envs:
+  - env/postgres-monitoring.env
+  name: postgres-monitoring
+  namespace: prometheus
+  options:
+    disableNameSuffixHash: true
