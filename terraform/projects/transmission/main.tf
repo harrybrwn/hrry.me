@@ -87,7 +87,7 @@ module "transmission" {
   rpc-whitelist  = concat(["127.0.0.1"], var.allow_ip)
   blocklist-url  = "http://list.iblocklist.com/?list=ydxerpxkpcfqjaybcssw&fileformat=p2p&archiveformat=gz"
   speed-limit-up = 128 # kB/s to keep network costs down
-  ratio-limit    = 1.2
+  ratio-limit    = 0.15
   download-dir   = "/var/lib/transmission-daemon/downloads"
   #incomplete-dir = "/var/lib/transmission-daemon/incomplete"
   # Instance
@@ -164,5 +164,6 @@ output "ip" {
 }
 
 output "auth" {
-  value = module.transmission.auth
+  value     = module.transmission.auth
+  sensitive = true
 }
