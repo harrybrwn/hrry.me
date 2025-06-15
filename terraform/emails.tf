@@ -33,6 +33,7 @@ resource "cloudflare_email_routing_rule" "h3y" {
 
 resource "cloudflare_email_routing_rule" "hrry_me" {
   for_each = toset([
+    "church",
     "h",
     "harry",
     "admin",

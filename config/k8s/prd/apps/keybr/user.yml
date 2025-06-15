@@ -1,0 +1,12 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: keybr
+  namespace: keybr
+spec:
+  mariaDbRef:
+    name: mariadb
+    namespace: mysql
+  passwordSecretKeyRef:
+    name: keybr-env
+    key: DATABASE_PASSWORD

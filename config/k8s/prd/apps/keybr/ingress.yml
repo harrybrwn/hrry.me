@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: keybr-hrry-me-routes
+spec:
+  entryPoints: [websecure, web]
+  routes:
+    - match: Host(`keybr.hrry.me`)
+      kind: Rule
+      services:
+        - name: keybr
+          namespace: keybr
+          kind: Service
+          port: http
+          scheme: http
+  tls:
+    secretName: hrry-me-tls

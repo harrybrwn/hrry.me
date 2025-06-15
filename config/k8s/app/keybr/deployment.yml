@@ -1,0 +1,112 @@
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keybr
+  namespace: keybr
+  labels:
+    app: keybr
+spec:
+  selector:
+    matchLabels:
+      app: keybr
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: keybr
+      labels:
+        app: keybr
+    spec:
+      initContainers:
+        - name: keybr-initdb
+          image: harrybrwn/keybr.com:latest
+          command: [sh, -c]
+          args: ['./packages/devenv/lib/initdb.ts']
+          env:
+          - name: NODE_ENV
+            value: production
+          - name: DATA_DIR
+            value: /var/keybr
+          envFrom:
+          - configMapRef:
+              name: keybr-env
+          - secretRef:
+              name: keybr-env
+          imagePullPolicy: Always
+      containers:
+      - name: keybr
+        image: harrybrwn/keybr.com:latest
+        command: [node]
+        args: [--enable-source-maps, ./root/index.js]
+        #command: [sh, -c]
+        #args: ['node ./root/index.js']
+        #args: ['npm run start-docker']
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 50m
+            #memory: 512Mi
+            memory: 1024Mi
+          limits:
+            cpu: 300m
+            #memory: 1024Mi
+            memory: 1524Mi
+        #livenessProbe:
+        #  tcpSocket:
+        #    port: 3000
+        #  initialDelaySeconds: 5
+        #  timeoutSeconds: 5
+        #  successThreshold: 1
+        #  failureThreshold: 3
+        #  periodSeconds: 10
+        #readinessProbe:
+        #  httpGet:
+        #    path: /
+        #    port: 3000
+        #  initialDelaySeconds: 5
+        #  timeoutSeconds: 2
+        #  successThreshold: 1
+        #  failureThreshold: 3
+        #  periodSeconds: 10
+        envFrom:
+          - configMapRef:
+              name: keybr-env
+          - secretRef:
+              name: keybr-env
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: DATA_DIR
+          value: /var/keybr
+        - name: SERVER_PORT
+          value: '3000'
+        # - name: DATABASE_USERNAME
+        #   valueFrom:
+        #     secretRef:
+        #       name: keybr-env
+        #       key: DATABASE_USERNAME
+        ports:
+        - containerPort: 3000
+          name: http
+      restartPolicy: Always
+      # The glob-hasher dependancy has no 'glob-hasher-linux-arm-gnueabihf'
+      # dependency which is required for arm.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "kubernetes.io/arch"
+                operator: In
+                values: ["amd64"]
+      tolerations:
+      - key: "arch"
+        operator: "Equal"
+        value: "arm64"
+        effect: "NoSchedule"

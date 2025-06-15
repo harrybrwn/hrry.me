@@ -36,6 +36,7 @@ resource "cloudflare_record" "netlify_www" {
 
 resource "cloudflare_record" "hrry_me_dns" {
   for_each = toset([
+    "keybr",
     "wiki",
     "1k",
     "mike",

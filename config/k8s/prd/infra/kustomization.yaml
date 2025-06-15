@@ -16,7 +16,8 @@ resources:
   - ../files/oauth2
   - ../../common/certificates
   - issuer.yml
-  - mariadb.yml
+  - mariadb-wp.yml
+  - databases
 
 patches:
   - target:

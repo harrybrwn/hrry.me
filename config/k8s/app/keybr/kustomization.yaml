@@ -1,0 +1,5 @@
+resources:
+  - namespace.yml
+  - service.yml
+  - deployment.yml
+  - secrets.yml

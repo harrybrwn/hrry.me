@@ -1,0 +1,3 @@
+resources:
+  - mysql-ns.yml
+  - mariadb-misc.yml

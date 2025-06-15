@@ -32,6 +32,10 @@
   roles:
     - docker
   tasks:
+    - name: Upgrade
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: true
     - name: Install dependencies.
       ansible.builtin.apt:
         package:

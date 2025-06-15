@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/name: keybr
+    app.kubernetes.io/part-of: keybr
+  name: keybr
+spec: {}

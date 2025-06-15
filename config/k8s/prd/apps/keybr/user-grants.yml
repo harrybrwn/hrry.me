@@ -1,0 +1,14 @@
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: keybr
+  namespace: keybr
+spec:
+  mariaDbRef:
+    name: mariadb
+    namespace: mysql
+  username: keybr
+  database: keybr
+  table: '*'
+  privileges:
+    - ALL

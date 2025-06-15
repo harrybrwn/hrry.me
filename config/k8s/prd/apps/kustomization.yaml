@@ -21,6 +21,7 @@ resources:
   - ../../app/bluesky
   - bsky/hry.at
   - bsky/pds.hrry.me
+  - keybr
 
 images:
   - name: 10.0.0.11:5000/harrybrwn/grafana:latest

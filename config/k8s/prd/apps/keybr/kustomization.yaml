@@ -1,0 +1,35 @@
+resources:
+  - ../../../app/keybr
+  - database.yml
+  - tls.yml
+  - ingress.yml
+  - user.yml
+  - user-grants.yml
+
+secretGenerator:
+  - name: keybr-env
+    namespace: keybr
+    behavior: replace
+    envs:
+      - env/mail.env
+      - env/db.env
+      - env/google.env
+
+configMapGenerator:
+  - name: keybr-env
+    namespace: keybr
+    behavior: create
+    literals:
+      - APP_URL=https://keybr.hrry.me
+      - DATA_DIR=/var/keybr
+      - DATABASE_CLIENT=mysql
+      - DATABASE_HOST=mariadb.mysql.svc.cluster.local
+      - DATABASE_PORT=3306
+      - DATABASE_DATABASE=keybr
+      - MAIL_PROVIDER=smtp
+      - MAIL_FROM_ADDRESS=keybr@hrry.me
+      - MAIL_FROM_NAME=Keybr Admin
+      - KNEX_DEBUG=false
+      - LOG_LEVEL=debug
+      - COOKIE_NAME=session
+      - COOKIE_DOMAIN=keybr.hrry.me
