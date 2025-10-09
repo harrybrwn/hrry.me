@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: keybr-data-pvc
+  namespace: keybr
+  labels:
+    app: keybr-data-pvc
+spec:
+  #storageClassName: nfs-storage
+  storageClassName: local-path
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

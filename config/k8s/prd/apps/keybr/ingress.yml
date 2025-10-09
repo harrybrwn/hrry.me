@@ -5,6 +5,17 @@ metadata:
 spec:
   entryPoints: [websecure, web]
   routes:
+    - match: Host(`keybr.hrry.me`) && PathPrefix(`/assets/`)
+      kind: Rule
+      middlewares:
+        - name: keybr-assets-http-cache
+          namespace: keybr
+      services:
+        - name: keybr
+          namespace: keybr
+          kind: Service
+          port: http
+          scheme: http
     - match: Host(`keybr.hrry.me`)
       kind: Rule
       services:
@@ -15,3 +26,14 @@ spec:
           scheme: http
   tls:
     secretName: hrry-me-tls
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: keybr-assets-http-cache
+  namespace: keybr
+spec:
+  plugin:
+    httpCache:
+      maxTtl: 300 # 5mins

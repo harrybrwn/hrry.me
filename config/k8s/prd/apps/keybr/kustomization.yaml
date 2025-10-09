@@ -30,6 +30,7 @@ configMapGenerator:
       - MAIL_FROM_ADDRESS=keybr@hrry.me
       - MAIL_FROM_NAME=Keybr Admin
       - KNEX_DEBUG=false
-      - LOG_LEVEL=debug
+      # debug|info|warn|error
+      - LOG_LEVEL=info
       - COOKIE_NAME=session
       - COOKIE_DOMAIN=keybr.hrry.me

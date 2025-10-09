@@ -27,6 +27,7 @@ patches:
       - { op: add, path: /spec/commonName, value: 'hrry.me' }
       - { op: add, path: /spec/dnsNames/0, value: 'hrry.me' }
       - { op: add, path: /spec/dnsNames/1, value: '*.hrry.me' }
+      - { op: add, path: /spec/dnsNames/2, value: '*.lab.hrry.me' }
       - op: add
         path: /spec/secretTemplate
         value:
