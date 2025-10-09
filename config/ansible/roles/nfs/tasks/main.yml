@@ -37,14 +37,11 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     mode: '0755'
-    # TODO default to an ansible_user or ansible_become_user variable
     group: "{{ item.group | default('root') }}"
     owner: "{{ item.user | default('root') }}"
     state: directory
-    recurse: true
   loop: "{{ nfs_extra_dirs }}"
   when: nfs_extra_dirs is defined
-  become: true
 
 - name: NFS | Add NFS exports file.
   ansible.builtin.template:

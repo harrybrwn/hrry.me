@@ -32,6 +32,7 @@ all:
         node-label:
           - hrry.me/env=prd
           - hrry.me/bsky-pds=true
+          - hrry.me/keybr-data=true
 
     lenovo:
       ansible_host: 10.0.0.13

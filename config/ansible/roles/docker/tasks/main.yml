@@ -51,10 +51,10 @@
   when: ansible_facts['os_family'] == "Debian" and ansible_facts['pkg_mgr'] == "apt"
   notify: docker group
 
-- name: Docker | Install custom libseccomp2 version.
+- name: Docker | Install custom libseccomp2 version for ARMv7l.
   ansible.builtin.apt:
     # Find latest at http://http.us.debian.org/debian/pool/main/libs/libseccomp/
-    deb: http://http.us.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.5.5-2_armhf.deb
+    deb: http://http.us.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.6.0-2_armhf.deb
   when: |
     ansible_facts.architecture == "armv7l" and
     ansible_facts.os_family == "Debian" and

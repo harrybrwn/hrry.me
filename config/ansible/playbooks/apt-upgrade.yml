@@ -1,0 +1,12 @@
+- name: Update and Upgrade apt Packages
+  hosts: prod
+  become: true
+  become_method: ansible.builtin.sudo
+  vars_files:
+    # ansible become password in vault encrypted vars file
+    - vars/become-password.yml
+  tasks:
+    - name: Upgrade
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: true

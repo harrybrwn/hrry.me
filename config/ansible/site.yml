@@ -1,5 +1,5 @@
-- name: Configure Router
-  ansible.builtin.import_playbook: playbooks/router.yml
+# - name: Configure Router
+#   ansible.builtin.import_playbook: playbooks/router.yml
 
 - name: Basic Config
   hosts: prod
@@ -92,8 +92,8 @@
         validate: openssl x509 -noout -in %s
 
     - name: Copy tmux config file.
-      ansible.builtin.template:
-        src: templates/.tmux.conf
+      ansible.builtin.file:
+        src: files/.tmux.conf
         dest: ~/.tmux.conf
         backup: false
         mode: '0664'
@@ -160,6 +160,7 @@
           - crossmnt # allows you to mount on another drive mount point
     nfs_extra_dirs:
       - path: /exports/nfs/hrry.dev/certs
+      - path: /exports/nfs/hrry.dev/storage
       - path: /exports/nfs/hrry.dev/storage/s3
       - path: /exports/nfs/hrry.dev/storage/grafana
       - path: /exports/nfs/hrry.dev/storage/prometheus
