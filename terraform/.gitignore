@@ -1,3 +1,4 @@
 keys/
 *.pub
 terraform.tfvars.backup
+*.auto.tfvars
