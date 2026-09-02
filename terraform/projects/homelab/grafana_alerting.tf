@@ -161,7 +161,7 @@ module "node_disk_usage" {
     for node in local.nodes :
     {
       name     = "Disk Usage: ${node.name}"
-      summary  = "Disk usage > 80%"
+      summary  = "Disk usage > 90%"
       query    = <<EOT
         100 - (
           (node_filesystem_avail_bytes{mountpoint="/", nodename="${node.name}"} * 100)
@@ -171,7 +171,7 @@ module "node_disk_usage" {
       duration = "0s"
       condition = {
         op   = "gt"
-        args = [80.0]
+        args = [90.0]
       }
     }
   ]

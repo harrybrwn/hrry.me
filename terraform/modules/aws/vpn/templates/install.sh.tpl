@@ -24,7 +24,8 @@ export PASS=1
 #   11 - Adguard
 #   12 - NextDNS
 #   13 - Custom DNS (input from propmt or $DNS1 and $DNS2)
-export DNS=3
+#export DNS=3
+export DNS=cloudflare
 
 # Port Choice
 #   1 - use 1194
@@ -54,6 +55,10 @@ sudo \
   PROTOCOL_CHOICE="$PROTOCOL_CHOICE" \
   DNS="$DNS"   \
   PASS="$PASS" \
-  ./openvpn-install.sh
+  ./openvpn-install.sh install
+echo '======================== View Clients ========================'
+./openvpn-install.sh client list
+cat openvpn-install.log
+echo '======================== Done ========================'
 
 # vim: ft=sh

@@ -7,7 +7,7 @@ set -e
 GIT_COMMIT="$(git rev-parse HEAD)"
 DATE="$(date '+%d-%m-%Y_%H:%M:%S')"
 
-s3_alias=hrry.dev
+s3_alias=hrry
 
 if [ "$1" = "--tar" ]; then
   tarball="backup-$(date '+%Y-%m-%d').tar.gz"

@@ -7,7 +7,7 @@ resource "cloudflare_email_routing_address" "hrry_me" {
 resource "cloudflare_email_routing_rule" "h3y" {
   for_each = toset(concat(
     [
-      "br3ie_+twitch0", # my twitch account lol
+      "br3ie_+twitch0",
       "oof",
       "private",
       "me",
@@ -15,6 +15,7 @@ resource "cloudflare_email_routing_rule" "h3y" {
       "patreon",
       "bsky",
       "h3rie+bsky",
+      "discord0",
     ],
   ))
   zone_id = cloudflare_zone.h3y_sh.id

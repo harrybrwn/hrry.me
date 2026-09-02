@@ -74,7 +74,7 @@ group "services" {
 
 group "logging" {
     targets = [
-        "fluentbit",
+        "fluent-bit",
         "grafana",
         "loki",
     ]
@@ -94,14 +94,6 @@ group "tools" {
         "geoipupdate",
         "ansible",
         "curl",
-    ]
-}
-
-group "fluentbit" {
-    targets = [
-        "fluent-bit-1_9_10",
-        "fluent-bit-3_0_4",
-        "fluent-bit-2_0_14",
     ]
 }
 
@@ -273,27 +265,20 @@ target "postgres" {
 ## Fluent Bit ##
 ################
 
-target "fluent-bit-base" {
-    dockerfile = "config/docker/Dockerfile.fluentbit"
-    inherits = ["base-service"]
-}
-
-target "fluent-bit-1_9_10" {
-    args = { FLUENTBIT_VERSION = "1.9.10" }
-    tags = tags(REGISTRY, "fluent-bit", ["1.9.10"])
-    inherits = ["fluent-bit-base"]
-}
-
-target "fluent-bit-2_0_14" {
-    args = { FLUENTBIT_VERSION = "2.0.14" }
-    tags = tags(REGISTRY, "fluent-bit", ["2.0.14"])
-    inherits = ["fluent-bit-base"]
-}
-
-target "fluent-bit-3_0_4" {
-    args = { FLUENTBIT_VERSION = "3.0.4" }
-    tags = tags(REGISTRY, "fluent-bit", ["3.0.4"])
-    inherits = ["fluent-bit-base"]
+target "fluent-bit" {
+  name = "fluent-bit_${replace(item.v, ".", "-")}"
+  matrix = {
+    item = [
+      { v = "3.2-debug" },
+      { v = "4.2.2" },
+      { v = "4.2.2-debug" },
+    ]
+  }
+  dockerfile = "config/docker/Dockerfile.fluentbit"
+  labels = labels()
+  platforms = platforms
+  args = { FLUENTBIT_VERSION = item.v }
+  tags = tags(REGISTRY, "fluent-bit", [item.v])
 }
 
 ###############

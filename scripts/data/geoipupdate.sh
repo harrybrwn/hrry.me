@@ -4,6 +4,8 @@ set -euo pipefail
 
 DATE="$(date '+%Y-%m-%d')"
 DEST=files/mmdb
+#readonly IMAGE=ghcr.io/maxmind/geoipupdate:v5.0.4
+readonly IMAGE=maxmindinc/geoipupdate:v5
 
 docker_download() {
 	local user dir
@@ -18,7 +20,7 @@ docker_download() {
 		--env "GEOIPUPDATE_EDITION_IDS=GeoLite2-ASN GeoLite2-City GeoLite2-Country" \
 		--volume "${dir}:/usr/share/GeoIP" \
 		--entrypoint "sh" \
-		ghcr.io/maxmind/geoipupdate:v5.0.4 \
+		"${IMAGE}" \
 		-c "/usr/bin/entry.sh && chown -R ${user} /usr/share/GeoIP/"
 }
 
@@ -38,6 +40,7 @@ if [ -L "${DEST}/latest" ]; then
 fi
 
 download "$@"
+mkdir -p services/geoip/testdata/ services/go-geoip/testdata/
 ln -s "${DATE}" "${DEST}/latest"
 ln -s "../../../${DEST}/latest" "services/geoip/testdata/latest"
 ln -s "../../../${DEST}/latest" "services/go-geoip/testdata/latest"
