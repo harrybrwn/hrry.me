@@ -56,12 +56,11 @@ module "homelab_alerts" {
   interval_seconds = 120
   rules = [
     {
-      name               = "NGINX Up"
-      description        = "Triggers when nginx stops reporting the \"up\" metric."
-      dashboard_panel_id = 15
-      dashboard          = { uid = "MsjffzSZz", panel_id = 15 }
-      duration           = "2m"
-      query              = "nginx_up{}"
+      name        = "NGINX Up"
+      description = "Triggers when nginx stops reporting the \"up\" metric."
+      dashboard   = { uid = "MsjffzSZz", panel_id = 15 }
+      duration    = "2m"
+      query       = "nginx_up{}"
       condition = {
         op   = "lt"
         args = [1]

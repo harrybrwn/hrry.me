@@ -1,11 +1,18 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/cloudflare/cloudflare" {
+provider "registry.opentofu.org/cloudflare/cloudflare" {
   version     = "5.24.0"
   constraints = "~> 5.0"
   hashes = [
+    "h1:EdatAvZg845pGYfEdzYNkxmQfV8or5y6HDbh6CIJfI8=",
+    "h1:F3V4hF42Y/Usl9OhzNFQHwUL8oNXTzbY5x6dQaDaASc=",
+    "h1:HR6WGGeB70a/yygHbNFsg+3Ko7s9AgtlkFf8PdbZfT8=",
     "h1:NxZYEFjCgaI7lGi3L8mn0KZcWPfbqUdmt5Bo4yqWMFE=",
+    "h1:PIAng5QYiHeydJm1S6sG6d1YYIjaFuIwnifvq/qEV1Q=",
+    "h1:R1Pt6vcenzSH8FDbxW1MQ3tk+/nXAfvscASTFaOmERM=",
+    "h1:ZGuBr8oAhWpWIni1jaNofXcsNUoaHuejjHcbcH72z1Q=",
+    "h1:yM0PvkOY7H66+yk+vlDJOnhDQXOFT6cHlmZ/C6UjT/c=",
     "zh:2390fc5df95addfd47d3f638964a1f9f6192a8c84ad3b1eab554ef88e0ac4091",
     "zh:2b09c0afbebeb3139a3094e3debda1ba5ff3d73b6eca536549bdc903284b6798",
     "zh:3241ce471f20745b1dc93baea73a716e1db4637ff41acc134114b7a8c9684714",
@@ -18,11 +25,24 @@ provider "registry.terraform.io/cloudflare/cloudflare" {
   ]
 }
 
-provider "registry.terraform.io/grafana/grafana" {
+provider "registry.opentofu.org/grafana/grafana" {
   version     = "1.36.1"
   constraints = "~> 1.36.1"
   hashes = [
+    "h1:JbXwebC4oZdY5lSdhNd2AtmLdNz5GGwx4kKmqm4X804=",
+    "h1:KG5IayR0jJrTNvjwXE4yl033FkGu6e2Qyxmt8xtnmJY=",
+    "h1:MOq+KSBDvWmvNUmVLWHFefV9aqTGFhTJnMLws6fEXmU=",
+    "h1:MRg3NbceF4WJEbxiFO7LTbIIazLU3KbnKA8SjAI723E=",
+    "h1:OzoDCq5If8pw+J4FLzE6aJ9aiKtJKyzRaq45/CbxahE=",
+    "h1:P5dosii0QVcs6jUpKDsIQnocGolUx6gK+T2XB9gnzao=",
     "h1:QVqqOFE+pIh6yWtA0r8d9kZoEvcvh06GFUO/GlGBiCU=",
+    "h1:Upc8OAqV3B900CVUWWkB/sZB0SGqJZT9MW38x8cBDMY=",
+    "h1:WQS5phxu+e4IEfyKV2iZgY/dXdMgN33rzAGKL2l9t50=",
+    "h1:a9AGoJew02nNhEnDUAVTjjAmFZ3YpRyZKvRXwKAJCvI=",
+    "h1:iCZhH6gptGAJL9sN+MrUlBiHI7jpEPkfBm32NimpH3s=",
+    "h1:iWsnyLwA4+D6wKSDD0NS9G9hsa0egXV6O3FOQpERQHo=",
+    "h1:mv7QGAKkLwT2RnwWxUra+kD+LnSKIGY4Y5uJNcB+GKs=",
+    "h1:ooxJ8wqd5c7WXiKS9bgu2ksylYrrJR5WIoiN/W3kW9E=",
     "zh:0b445e1d902c3c90aa312079a4b1c126e6b483cd1782095f9c3983a2b9398318",
     "zh:11d50b762e097005880aaa66c2eef57dcb0d7787ceecb1b485d57c4a5e066c98",
     "zh:1ebc1d7b1d54095e19107d234f0999b941549af61ec0b0b957c987eb17540c67",
@@ -40,54 +60,96 @@ provider "registry.terraform.io/grafana/grafana" {
   ]
 }
 
-provider "registry.terraform.io/hashicorp/aws" {
+provider "registry.opentofu.org/hashicorp/aws" {
   version = "6.62.0"
   hashes = [
-    "h1:lTKd2c1EunGxt2XROLgEeSXA2Jk+WiiG9BTcp+L/0xY=",
-    "zh:35a9e4bc6fd622c5a99561b882025f2745f1256bbf1a8da8d6b39319b75ae0b5",
-    "zh:405927d470ff16201e40aa0fa2d0ab1de477360a0926d20719cd029179682ecd",
-    "zh:4ab7866593a90bcf18f066b0092a209b9f42852acd783b504031ae74cb6f7010",
-    "zh:5b477f313fc511648a4eed9f9085d0778414835896256ab14296d2345b7070e3",
-    "zh:87de70bc99751f94262cec2260d972555a98f588aa3a613e417438f88a1182df",
-    "zh:88f02a8ff07f00da4ffb3bee9e8ae25588e3a0a92633c625c1c2a63bac00a844",
-    "zh:8d8596257453357c9f3fccaa7d2f04299e8d35b16f364adb8a2c829143a9c090",
-    "zh:953c8e15fa9c12c081f17d66cf45246d032fa23bee33f264dc82242afdb98bc2",
-    "zh:9a7dd903e5e9b2b0cc1317ad2d2692e0ddf05ae2a5aaee20ec5dd1db456711b7",
-    "zh:9b12af85486a96aedd8d7984b0ff811a4b42e3d88dad1a3fb4c0b580d04fa425",
-    "zh:a859154c75c1088d098a481f1ebb259720c5a2ad87781364abf556a741e5adb7",
-    "zh:b8d1e72ad39d5864118f64dd3273424ab637d34b3ff8dd3dfeb4aef9d458587f",
-    "zh:c3666fcfc7b131f5282d4e7249fa68c3a21665757888aa02bbaf6be1cd036bba",
-    "zh:c6b8ff94b3f49bf85fc087381cfe1b271c5b01cf74cf140d58aa500be7138913",
-    "zh:d8143d790e9dd77b8e2f9168e4a33ad6d064dc4b082a0196636b182105aaed14",
-    "zh:fa41eca042f377eb2741e95b36609c1de5b0cd675cd4e3e30c709497cb94db02",
+    "h1:5x/4mMlIqSyeMJQ8tD0A+FTNynpdHW8IA7F2zqrgpwU=",
+    "h1:Etlx1tUvlB7sqFWPciSn9Yz1g50ctM+dGlyVMpu720I=",
+    "h1:FBnaqFZDf3DdVb4SVpCPoT+TZQUSChNmmDViEGPV1rw=",
+    "h1:MRIBAtFWiQAyo4kpbBUtIvxlSmpQ9Eel0nLMYCb6MH4=",
+    "h1:MeMP80kzq1meAJQ0l+kU6KVW1S+4EhIRSy6q3L++LPU=",
+    "h1:N8W8KgcjlG1kb9mPapfieH/vYzyNrJBsb4RS0axwg5Y=",
+    "h1:OB5obEZKuaX4gQ7DYxYvAMaf4I6v2keeKOPfOpFMkgI=",
+    "h1:WnhkO4yQc0QvVgx/xJFI+UbM1y8BC8yvApoDUlhb5XY=",
+    "h1:fN9PvxrT2/rAiT86Hen0vicyMbKXAZG6VC/TEP9ZpD8=",
+    "h1:kRrdLje5ab/tmObt9lOKOi2KCyIB8B3xZCKhcfdS2K0=",
+    "h1:l5VASLhVAOCr2Q+7ywGqWb+JSEIJ5UjilOMBjFMdQ7U=",
+    "h1:mugvZRK3/kSysUmpt664tMNpOZtGbQd6nGKaM4p3kwo=",
+    "h1:nY4ct0BTUQ7se8gbnzXsPCN2tiP4mZsGnEw2juSpXNs=",
+    "h1:qRFHk1ksyfMj2KOrs9pEntzagM+Tzqm+qznJfxVrJj0=",
+    "h1:szVx4GPJr2hJt9t82VilK2Gu/N9WR/KbdeLZ9wb0Nek=",
+    "zh:072d542e40ca0b8c5e081c9f834e3e41aa2ad31c01219522f314685d5c482823",
+    "zh:0b2643473f5bb154d724e64e75632814d74acda5fd81b6488d0ed13f413152b2",
+    "zh:108b3e175886e45c4e955f1ef323aa849dfd82fc450108238be2ab7c0d1f0c2e",
+    "zh:3586ca03a5d07e40a67b01b7fdebc6f7636a42c2a2f6ab88635ffca8f6928dfe",
+    "zh:47bd626153ee94e6b45533c7c02f579dc6d586d6d9580e03a040643f647be50b",
+    "zh:49aafbe6f665b3c4c97522905fd09229f2758a782c7cfc508280607030134ef8",
+    "zh:6e3397227c3f8f3becc04f95ebcb977d7012f025c9921f9ef5e603fe6d5da665",
+    "zh:70f4478658a13eeb57725e3b424329494a0ffbd78ac2734effea4e60d802cfa2",
+    "zh:774d4357447f94a5d4981c7569f85cd140ac577974174c5e7b477d834c6bfb43",
+    "zh:7971ef7bc532ab0edb3ee739ac3010b46321ec8541f873956a20dabbd6a0f189",
+    "zh:8ec18fba906468a9e6ce15329aa098dfb45ab1b9dca446a8fc2079a0d6ef590c",
+    "zh:98328661edd4dfc4e4782fd03a7010854218d3fbf35435837ac33e7ee8aafe7e",
+    "zh:9cbbf5033116f72749ebd4cf9add6aadf7e9e4bc7704eec86a8f4c139c16c120",
+    "zh:9faf944474f9233ddbb3606bc495570d4b952fea21f09c28676f9847d619e50f",
+    "zh:d0636d6de8a7b0b0bcc2add80556ee7118981d738998d4772558b9de0df99af1",
   ]
 }
 
-provider "registry.terraform.io/hashicorp/random" {
+provider "registry.opentofu.org/hashicorp/random" {
   version = "3.9.0"
   hashes = [
-    "h1:UlBuNVuCGJ39tTv2c5gz2NRZnQbXfbIWbTzWcth5o74=",
-    "zh:161ad0bd9a75768c82f53fb6e7172a9d8be2d4889b012645a34795031aaf1bf1",
-    "zh:19dc9a5b17729725ccfc4f45b0500af0ee5bc6b6b160c7adb8f2bf617d2c80ea",
-    "zh:269eda8fe42daa7974d5a34d166c3ba9defe80cde86c01e4dadcfdf2e1f05e5f",
-    "zh:373f7c65566f8f2cc7f45d698654feb9d988996957e1266a69ca00c52d6d16d0",
-    "zh:5599d16804c41c83009ec621b6d6b6f74e102f5827678a4750f8809055546b61",
-    "zh:583be0440469a22bff70dcfa56593b01566860b29607437264adb51060cf46fc",
-    "zh:5f211d8ec3f2e1f414870d9584bfe26e6995560ef81c748f8447a48164767398",
-    "zh:78d5eefdd9e494defcb3c68d282b8f96630502cac21d1ea161f53cfe9bb483b3",
-    "zh:7b547fd16216761ef86efc3ed516ac5ac0c5c42b7c7eb24a08cef2d93f69ed5e",
-    "zh:7e7c0679daf2a382151d05068c8c3f0dae6b7b7dccf818827b73dd08638df2ef",
-    "zh:8089dec888a8038b9b4fb23b3df7e1057293dbc5b60b42cc47ff690d69d4b61b",
-    "zh:c51f15a031edfd6f23ce8ced3446ca7f8d8d647e2499890d7d5d10d5016d7257",
-    "zh:c94784f005708890dc6895afd53636ec00ec1e430b15d41e5aebfb1d4b39bd04",
+    "h1:8EQU5KSxezcjo/phRSe69rDOI0lk4pSaggj7FsskYp8=",
+    "h1:Lw9im2VBBJQ3RyAbHPQ0rcvcmmcZWm3x+kIOpN+Tv9s=",
+    "h1:U8KXqGCoNI9/guYbTvzgdtVk3fRthoG0UXwm1JoEpIs=",
+    "h1:YXaVd4p6qXPPVaxIBaIDNXmBwT02ZqDn0qD+tYpw8sA=",
+    "h1:cOpc03fphEt/G9Rfc4jLL/fW0D7tgvlXqiDKPF4vuww=",
+    "h1:g09RR7T1xWkeGrZwWvWMT9ncJrFGr1k3CBD585UmO7w=",
+    "h1:gGDdPPibmw2EWROx+sh1RGLjR5+nPwZyrf6/N9jXfeM=",
+    "h1:haE7/nXCOhXKP4oXeEnER3t5CaVQWqujz4nBnpeTUv4=",
+    "h1:ieSVpfZS2lKuMr05ph0QsOVpCzg7uk3cgKBaXR+Ikug=",
+    "h1:ig2s1IS9IzehorRjvVAnKIsUUj8fkgyxct1L/kswcc4=",
+    "h1:j3lS+ZEERFnoab8t1ppDrScGVP/cgWbzlCrEYKTCXYw=",
+    "h1:lxezrKmOiQIySHAM+os8qLVq7hqufDr8h3Hpzvsk+78=",
+    "h1:lzRqBJAG+NETxHbEZUJ/YP3RMEjZBinTX7VmgH3lw60=",
+    "h1:tdSNWK5ApqUsgbdYieyeYLTu6nIZUV3hR1oFqUfAuGo=",
+    "h1:xedet8yH/zI2CfdxsGlK0nlFWc/Bp61yrWsEa3fHB8g=",
+    "zh:03f1114cc20b8913523735ab76e0f0a2b16ce13c92923a53304bf85f07fc0dbc",
+    "zh:105b678ee72322a3067f105d7e05e940f6143238f377f6e87ff4ec909246ac2a",
+    "zh:55f3bbf13ea18cbace61a706566a80f25f33fe2b1780b6f3d7b582af2a05b6d2",
+    "zh:63adf996db48f082f7a6351eb485e219cd88795fc71e6ec60a837263ab0d2cb1",
+    "zh:7e99550738a4e3cc68b8a467714b0d69371025fe95e3326d5323d026d55653e9",
+    "zh:8342b54af3a18a37e075eeae61be57f4de2ba71b35d95c5075d402dd2c1f289d",
+    "zh:83ee18e32ac9dd5fc91298554b7c4cfa4c3a1db50f4c797945637cc93c0844ae",
+    "zh:993ecc0adbf6bd535a59fbc9b735d8c33950e6f6eb5e621d750da9b71d65d80a",
+    "zh:ad722bc59d4edbf1415e827fc007c0efe6e0e9462d5568bae20b34be1058a261",
+    "zh:ae9448e1f87b2f9a6c5197a0e9862162ec6b137cb3a3835e11522995d8939e7c",
+    "zh:bc9cdd3aac784f759125c6627f6f6416e8726a1c184eb9cf3e55b9edbc94c627",
+    "zh:c8e35b89572ba1c40a9b20022e033a3395fb8d42e7604d50c900f193ba10382e",
+    "zh:e2deaa8a9975ef81d9f62baed12c41286918b0a10908e0e031f13f69a3b730a1",
+    "zh:ee39707557210a0ab1098aa357d2cdfe502e5a312d0dbdffb09d08facc4d3fc5",
+    "zh:f81afe4eb63e8aa9e0ea71be6c990f0dc69cb360e7191c0742a991f4a5081b64",
   ]
 }
 
-provider "registry.terraform.io/integrations/github" {
+provider "registry.opentofu.org/integrations/github" {
   version     = "5.13.0"
   constraints = "5.13.0"
   hashes = [
+    "h1:+55DVs9WYs9XtxxvWuhkVVL5vQno14rwxPyMJjDmsVU=",
+    "h1:2WoRw3UG1jzOLw2h3iEMPAwE29SsTtpznPWzX6YqzGU=",
+    "h1:3GioNMegXwOHDZROjEvzc1g9B4rBzVd2ciYs0M221og=",
+    "h1:4Nr6iIGLPYovvGWuDvQnSEajtIw3RlqHtc54T3U8J3s=",
+    "h1:7qNLigMnEVD5QsdSudzruJ4LGRUuc+yISbfZZyx12i0=",
+    "h1:KJ7VOMTVdrZyybOHgEaqMN977W3tKgqBtWGzjeSi4zU=",
+    "h1:Lst7wRmstduPb+j2jCzxaKTJDmWQe6xIdUUA/7qOOmY=",
+    "h1:SwZIFHjIFVI+33krkyPD0zfoHJGpbB8VVDwhyTQfboI=",
+    "h1:b8dyCezrdTFn9LjsMfif22ALK38wSV5vtg6ffVzF/B4=",
     "h1:h5m2rgps7szJcS58Qw8zVIA0sbzZy0zJz/6brTMKxMk=",
+    "h1:roo8X4SYtik1ZTk/S9Kqo1O002cwLz5f1IsU5Hl8Br0=",
+    "h1:uAZdMF99ABU3iaBkFsc67TgYlpJI+ykuLdAXcceQqp4=",
+    "h1:v5yfRwmm6uC0Pk3s+sHA8YBP/pLcU+UHDj3qYh3uYD8=",
+    "h1:wHe5M7jomQlN87XHhwoXk1l4L0AWuflFuQeee6pJK+k=",
     "zh:037bb9526d87b06b8077ebc1965b6705a8f5cb1c1eb7289a292ab37e90ba825d",
     "zh:25c21880806817cd3090797504843b5052f935024935e2b20103e0b89e610ba3",
     "zh:4ecc4a8601edbc776ed9ae08ea9d52613d03302a2120594ac1a700c7688bb690",
