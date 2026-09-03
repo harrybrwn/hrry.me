@@ -3,14 +3,14 @@ provider "cloudflare" {
 }
 
 data "cloudflare_zones" "all" {
-  filter {
-    account_id = var.cf_account_id
-    status     = "active"
+  account = {
+    id = var.cf_account_id
   }
+  status = "active"
 }
 
 locals {
-  zones = { for z in data.cloudflare_zones.all.zones : replace(z.name, ".", "_") => z.id }
+  zones = { for z in data.cloudflare_zones.all.result : replace(z.name, ".", "_") => z.id }
   local_ips = [
     "10.0.0.11",
     "10.0.0.13",
@@ -20,7 +20,7 @@ locals {
   ]
 }
 
-resource "cloudflare_record" "hrry_dev_local_dns" {
+resource "cloudflare_dns_record" "hrry_dev_local_dns" {
   for_each = merge(
     [
       for d in [
@@ -37,7 +37,7 @@ resource "cloudflare_record" "hrry_dev_local_dns" {
     ]...
   )
   name    = each.value.domain
-  value   = each.value.address
+  content = each.value.address
   type    = "A"
   proxied = false
   ttl     = 120

@@ -1,8 +1,14 @@
 terraform {
+  backend "s3" {
+    bucket       = "hrryhomelab"
+    key          = "infra/projects/homelab.tfstate"
+    region       = "us-west-2"
+    use_lockfile = true
+  }
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "~> 4.2.0"
+      version = "~> 5"
     }
     github = {
       source  = "integrations/github"
