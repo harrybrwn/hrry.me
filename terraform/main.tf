@@ -1,4 +1,12 @@
 terraform {
+  # backend "s3" {
+  #   bucket       = "hrryhomelab"
+  #   key          = "infra/projects/hrry.me.tfstate"
+  #   region       = "us-west-2"
+  #   use_lockfile = true
+  #   encrypt      = true
+  #   kms_key_id   = "alias/terraform-state"
+  # }
   required_providers {
     aws = {
       source  = "hashicorp/aws"

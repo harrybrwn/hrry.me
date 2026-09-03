@@ -15,7 +15,7 @@ resource "grafana_message_template" "discord_template" {
 resource "grafana_contact_point" "discord_alerts" {
   name = "Discord Alerts"
   discord {
-    url                     = var.discord_webhook_url
+    url                     = local.discord_webhook_url
     message                 = "{{ template \"${local.discord_template}\" . }}"
     use_discord_username    = true
     disable_resolve_message = false

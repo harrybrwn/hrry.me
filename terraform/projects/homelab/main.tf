@@ -44,3 +44,17 @@ resource "cloudflare_dns_record" "hrry_dev_local_dns" {
   comment = "Created by terraform."
   zone_id = local.zones.hrry_dev
 }
+
+data "aws_secretsmanager_secret" "homelab_meta" {
+  name = "homelab"
+}
+
+data "aws_secretsmanager_secret_version" "homelab" {
+  secret_id = data.aws_secretsmanager_secret.homelab_meta.id
+}
+
+locals {
+  homelab_secrets     = jsondecode(data.aws_secretsmanager_secret_version.homelab.secret_string)
+  grafana_api_key     = local.homelab_secrets["grafana_api_key"]
+  discord_webhook_url = local.homelab_secrets["discord_webhook_url"]
+}

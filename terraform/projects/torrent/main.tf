@@ -4,10 +4,12 @@ locals {
 
 terraform {
   backend "s3" {
-    bucket         = "hrryhomelab"
-    key            = "infra/projects/torrent.tfstate"
-    region         = local.region
-    dynamodb_table = "infra"
+    bucket       = "hrryhomelab"
+    key          = "infra/projects/torrent.tfstate"
+    region       = local.region
+    use_lockfile = true
+    encrypt      = true
+    kms_key_id   = "alias/terraform-state"
   }
   required_providers {
     aws = {

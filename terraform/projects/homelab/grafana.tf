@@ -1,7 +1,7 @@
 provider "grafana" {
   # For bootstrapping, edit /etc/hosts
   url  = "https://grafana.lab.hrry.dev"
-  auth = var.grafana_api_key
+  auth = local.grafana_api_key
 }
 
 resource "grafana_data_source" "prometheus" {

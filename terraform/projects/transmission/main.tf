@@ -1,3 +1,5 @@
+# This is the older one. Use the 'torrent' project instead.
+
 terraform {
   backend "s3" {
     bucket         = "hrryhomelab"

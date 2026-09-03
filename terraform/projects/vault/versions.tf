@@ -1,9 +1,11 @@
 terraform {
   backend "s3" {
-    bucket         = "hrryhomelab"
-    key            = "infra/projects/vault.tfstate"
-    region         = var.region
-    dynamodb_table = "infra"
+    bucket       = "hrryhomelab"
+    key          = "infra/projects/vault.tfstate"
+    region       = var.region
+    use_lockfile = true
+    encrypt      = true
+    kms_key_id   = "alias/terraform-state"
   }
   required_providers {
     aws = {
