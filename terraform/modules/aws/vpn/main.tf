@@ -213,6 +213,7 @@ resource "null_resource" "openvpn_download_configurations" {
     private_key = local_file.private_key_file.filename
     host        = aws_eip.vpn_ip.public_ip
     users       = join(" ", concat([local.admin_user], var.users))
+    ssh_opts    = format("-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i '%s'", local_file.private_key_file.filename)
   }
 
   depends_on = [
@@ -222,17 +223,11 @@ resource "null_resource" "openvpn_download_configurations" {
   ]
 
   provisioner "local-exec" {
-    command = <<EOT
-    mkdir -p ${local.ovpn_config_path}/;
-    ssh -o StrictHostKeyChecking=no \
-      -o UserKnownHostsFile=/dev/null \
-      -i ${self.triggers.private_key} \
-      ${self.triggers.user}@${self.triggers.host} \
-      "ls -la /home && ls -la /home/${self.triggers.user}" ;
-    scp -o StrictHostKeyChecking=no \
-      -o UserKnownHostsFile=/dev/null \
-      -i ${self.triggers.private_key} ${self.triggers.user}@${self.triggers.host}:/home/${self.triggers.user}/*.ovpn ${local.ovpn_config_path}/;
-    EOT
+    command = join("\n", [
+      "mkdir -p ${local.ovpn_config_path}/;",
+      # "ssh ${self.triggers.ssh_opts} ${self.triggers.user}@${self.triggers.host} 'ls -la /home && ls -la /home/${self.triggers.user}';",
+      "scp ${self.triggers.ssh_opts} ${self.triggers.user}@${self.triggers.host}:/home/${self.triggers.user}/*.ovpn '${local.ovpn_config_path}/';",
+    ])
   }
 }
 

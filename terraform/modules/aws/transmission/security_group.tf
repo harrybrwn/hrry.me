@@ -24,7 +24,8 @@ resource "aws_vpc_security_group_ingress_rule" "ssh" {
 # }
 
 module "transmission_security_group" {
-  source            = "../transmission-security-group"
+  source            = "../../transmission-security-group"
+  project_name      = var.project_name
   security_group_id = aws_security_group.main.id
   ipv6              = var.ipv6
 }

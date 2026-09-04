@@ -16,6 +16,16 @@ while [ $# -gt 0 ]; do
 	esac
 done
 
+# Tip: Look in config/k8s/common/secrets/...
+#
+# Example
+#		$ kubectl create secret generic \
+#				<name> \
+# 			--dry-run=client \
+# 			--output yaml \
+# 			--from-env-file ./creds.env \
+#			| kubeseal.sh
+
 kubeseal \
 	--controller-namespace "secrets-management" \
 	--controller-name "sealed-secrets" \
