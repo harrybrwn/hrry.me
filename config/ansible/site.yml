@@ -1,5 +1,5 @@
-# - name: Configure Router
-#   ansible.builtin.import_playbook: playbooks/router.yml
+- name: Configure raspberry pis
+  ansible.builtin.import_playbook: playbooks/raspberrypi.yml
 
 - name: Basic Config
   hosts: prod
@@ -92,10 +92,9 @@
         validate: openssl x509 -noout -in %s
 
     - name: Copy tmux config file.
-      ansible.builtin.file:
+      ansible.builtin.copy:
         src: files/.tmux.conf
         dest: ~/.tmux.conf
-        backup: false
         mode: '0664'
       become: false
     - name: Create .vim directory
