@@ -2,9 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 labels:
-- includeSelectors: true
-  pairs:
-    environment: prd
+  - includeSelectors: true
+    pairs:
+      environment: prd
 
 resources:
   - ../../app/grafana
@@ -25,7 +25,7 @@ resources:
 
 images:
   - name: 10.0.0.11:5000/harrybrwn/grafana:latest
-    newTag: '9.5.1'
+    newTag: "9.5.1"
   - name: minio/console:v0.20.1
     newTag: v0.20.1
   - name: 10.0.0.11:5000/harrybrwn/s3:RELEASE.2022-05-23T18-45-11Z.fips
@@ -42,10 +42,6 @@ patches:
     path: patches/filestash-pvc.yml
 
 secretGenerator:
-  - name: jwt-secrets
-    behavior: create
-    envs: [env/jwt.env]
-    options: { disableNameSuffixHash: true }
   - name: grafana-env
     behavior: replace
     envs: [env/grafana.env]

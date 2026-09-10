@@ -114,51 +114,6 @@ secretGenerator:
   #  behavior: replace
   #  envs: [env/minio-console.env]
 
-  - name: minio-root-user
-    namespace: minio
-    behavior: create
-    envs: [env/minio-root-user.env]
-    options: { disableNameSuffixHash: true }
-  - name: minio-env
-    envs:
-      - env/minio-pbkdf.env
-    namespace: minio
-    behavior: create
-    options: { disableNameSuffixHash: true }
-  - &minio-user
-    namespace: minio
-    behavior: create
-    options: { disableNameSuffixHash: true }
-    name: minio-user-loki
-    envs: [env/minio-users/loki.env]
-  - <<: *minio-user
-    name: minio-user-registry
-    envs: [env/minio-users/registry.env]
-  - <<: *minio-user
-    name: minio-user-backups
-    envs: [env/minio-users/backups.env]
-  - <<: *minio-user
-    name: minio-user-files
-    envs: [env/minio-users/files.env]
-  - <<: *minio-user
-    name: minio-user-outline
-    envs: [env/minio-users/outline.env]
-  - <<: *minio-user
-    name: minio-user-geoipupdate
-    envs: [env/minio-users/geoipupdate.env]
-  - <<: *minio-user
-    name: minio-user-github-actions
-    envs: [env/minio-users/github-actions.env]
-  # - <<: *minio-user
-  #   name: minio-user-mastodon
-  #   envs: [env/minio-users/mastodon.env]
-  - <<: *minio-user
-    name: minio-user-wordpress
-    envs: [env/minio-users/wordpress.env]
-  - <<: *minio-user
-    name: minio-user-bsky
-    envs: [env/minio-users/bsky.env]
-
   - name: hydra-env
     behavior: replace
     envs: [env/hydra.env]
