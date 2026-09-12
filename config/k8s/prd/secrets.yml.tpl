@@ -20,7 +20,7 @@ spec:
   refreshPolicy: OnChange
   refreshInterval: {{ $refresh }}
   secretStoreRef:
-    name: aws-secretstore
+    name: aws-ssm-store
     kind: ClusterSecretStore
   target:
     name: {{ .name }}
@@ -46,6 +46,10 @@ spec:
     - secretKey: {{ .name }}
       remoteRef:
         key: {{ $secret }}
-        property: {{ if (index . "key") }}{{ .key }}{{else}}{{ .name }}{{end}}
+        {{- if (index . "key") }}
+        property: {{ .key }}
+        {{- else }}
+        #property: {{ .name }}
+        {{- end}}
     {{- end }}
 {{ end -}}
