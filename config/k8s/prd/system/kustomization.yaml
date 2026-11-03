@@ -23,7 +23,6 @@ resources:
   - mariadb-operator-extras.yml
   - reloader-extras.yml
   - replicator-extras.yml
-  - secret-store.yml
 
 patches:
   - target:
