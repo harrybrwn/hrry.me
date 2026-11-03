@@ -1,0 +1,87 @@
+---
+# Private-only routes for the three Hermes listeners:
+#   dashboard.hermes.hrry.dev -> 9119  management dashboard + TUI chat tab
+#   api.hermes.hrry.dev       -> 8642  OpenAI-compatible API (bearer API_SERVER_KEY)
+#   chat.hermes.hrry.dev      -> 9120  browser Webapp (Desktop workspace)
+#
+# All three sit on one IngressRoute and reuse the `ipsec-prv` middleware from
+# prd/ingress-routes.yml, which whitelists loopback + RFC1918 only, so public
+# source addresses are rejected by traefik before they reach the pod. An
+# IngressRoute is used instead of the chart's Ingress because the CRD provider
+# runs with allowCrossNamespace=true (the Ingress provider does not), so it can
+# reference `default/ipsec-prv` at all.
+#
+# Traefik has no spec-level `middlewares` for IngressRoute, so the reference is
+# repeated per route.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hermes-routes
+  namespace: hermes
+spec:
+  entryPoints: [websecure]
+  routes:
+    - match: Host(`dashboard.hermes.hrry.dev`)
+      kind: Rule
+      middlewares:
+        - name: ipsec-prv
+          namespace: default
+      services:
+        - name: hermes-hermes-agent
+          namespace: hermes
+          kind: Service
+          port: dashboard
+          scheme: http
+    - match: Host(`api.hermes.hrry.dev`)
+      kind: Rule
+      middlewares:
+        - name: ipsec-prv
+          namespace: default
+      services:
+        - name: hermes-hermes-agent
+          namespace: hermes
+          kind: Service
+          port: api-server
+          scheme: http
+    - match: Host(`chat.hermes.hrry.dev`)
+      kind: Rule
+      middlewares:
+        - name: ipsec-prv
+          namespace: default
+      services:
+        - name: hermes-hermes-agent
+          namespace: hermes
+          kind: Service
+          port: webapp
+          scheme: http
+  tls:
+    secretName: hermes-hrry-dev-tls
+
+---
+# The existing wildcard (*.hrry.dev) does NOT cover *.hermes.hrry.dev - a
+# wildcard only matches a single label. Issued by the same Let's Encrypt
+# (Cloudflare DNS-01) ClusterIssuer the other certs use.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hermes-hrry-dev-tls
+  namespace: hermes
+spec:
+  secretName: hermes-hrry-dev-tls
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  commonName: '*.hermes.hrry.dev'
+  dnsNames:
+    - 'hermes.hrry.dev'
+    - '*.hermes.hrry.dev'
+  duration: 2160h
+  renewBefore: 1440h
+  subject:
+    organizations:
+      - HarryBrown
+    organizationalUnits:
+      - homelab
+  usages:
+    - server auth

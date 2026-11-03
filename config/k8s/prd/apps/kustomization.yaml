@@ -19,6 +19,7 @@ resources:
   - ../../app/lnsmol
   - geoip
   - ../../app/bluesky
+  - hermes
   - bsky/hry.at
   - bsky/pds.hrry.me
   - keybr

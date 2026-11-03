@@ -1,0 +1,195 @@
+---
+# Nous Research Hermes Agent: an LLM agent that runs a shell and a browser, so
+# it is deliberately pinned to a single machine (lenovo) with block-backed
+# local storage. HERMES_HOME is a single-writer SQLite directory (WAL mode) so
+# the workload must never run on NFS or with more than one replica.
+#
+# Chart: https://github.com/jyje/hermes-agent-helm (community maintained, not
+# an official Nous Research release).
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: hermes
+  namespace: kube-system
+spec:
+  chart: hermes-agent
+  version: 1.23.0
+  repo: https://jyje.github.io/hermes-agent-helm
+  targetNamespace: hermes
+  valuesContent: |-
+    image:
+      repository: nousresearch/hermes-agent
+      # v0.22.6 is the first image with the browser Webapp (`hermes_cli/webapp.py`
+      # landed in it); chart 1.23.0's own appVersion is v0.22.5, which has no
+      # 9120 listener at all.
+      tag: v0.22.6
+      pullPolicy: IfNotPresent
+
+    # Outbound messaging gateway (Telegram/Discord/Slack). No inbound listener
+    # is exposed, see the commented dashboard/apiServer blocks below.
+    args: ["gateway", "run"]
+
+    # One agent == one HERMES_HOME. Never scale out; run a second release
+    # instead.
+    replicaCount: 1
+    controller:
+      type: deployment
+
+    serviceAccount:
+      create: true
+      automountServiceAccountToken: false
+
+    # --- Single node pinning ---------------------------------------------
+    # lenovo (10.0.0.13) is the only node labeled hrry.me/node-size=big, so
+    # this pair of selectors pins the pod to that one machine while also
+    # keeping it off the arm64 raspberry pis. If lenovo is ever rebuilt with a
+    # different label set, hard-pin with {kubernetes.io/hostname: lenovo}.
+    nodeSelector:
+      kubernetes.io/arch: amd64
+      hrry.me/node-size: big
+
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: '2'
+        memory: 4Gi
+
+    # --- State ------------------------------------------------------------
+    # local-path keeps the SQLite databases on the node's own ext4 disk.
+    # Do NOT point this at nfs-storage: Hermes cannot detect NFS and the WAL
+    # locking breaks on it.
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 10Gi
+      mountPath: /opt/data
+      annotations:
+        # Keep agent memory/skills if the release is ever uninstalled.
+        helm.sh/resource-policy: keep
+
+    # Partial override of Hermes' own config.yaml. If this PVC is ever moved
+    # to network storage, add `config.database.journal_mode: delete` BEFORE the
+    # first start, otherwise the SQLite WAL will corrupt.
+    config:
+      model:
+        default: anthropic/claude-sonnet-4.5
+        provider: openrouter
+      # Browser Webapp ("Hermes Desktop in a tab") served by the gateway itself
+      # on 9120. Not the same thing as the dashboard's Chat tab (9119), which
+      # embeds the TUI over a PTY. A non-loopback host reuses the dashboard's
+      # auth provider, hence the HERMES_DASHBOARD_BASIC_AUTH_* keys below.
+      webapp:
+        enabled: true
+        host: 0.0.0.0
+        port: 9120
+        public_url: https://chat.hermes.hrry.dev
+
+    # Rendered as an ExternalSecret (the chart's own env Secret is skipped).
+    # Values come from the same Parameter Store document the rest of the
+    # cluster uses; add/remove properties there, not in git.
+    externalSecret:
+      enabled: true
+      refreshInterval: 1h
+      secretStoreRef:
+        kind: ClusterSecretStore
+        name: aws-ssm-store
+      target:
+        creationPolicy: Owner
+        deletionPolicy: Retain
+      data:
+        - secretKey: OPENROUTER_API_KEY
+          remoteRef:
+            key: /homelab/k8s/secrets
+            property: hermes-openrouter-api-key
+        - secretKey: DEEPSEEK_API_KEY
+          remoteRef:
+            key: /homelab/k8s/secrets
+            property: hermes-deepseek-api-key
+        - secretKey: EXA_API_KEY
+          remoteRef:
+            key: /homelab/k8s/secrets
+            property: hermes-exa-api-key
+        # Dashboard sign-in. `env` below is ignored while this ExternalSecret
+        # is enabled, so these MUST come through here and dashboard.auth
+        # must stay on `external`. Without them the dashboard fails closed
+        # (it binds 0.0.0.0, so upstream's auth gate is mandatory).
+        - secretKey: HERMES_DASHBOARD_BASIC_AUTH_USERNAME
+          remoteRef:
+            key: /homelab/k8s/secrets
+            property: hermes-dashboard-username
+        - secretKey: HERMES_DASHBOARD_BASIC_AUTH_PASSWORD
+          remoteRef:
+            key: /homelab/k8s/secrets
+            property: hermes-dashboard-password
+        # Bearer token for the OpenAI-compatible API server on 8642.
+        - secretKey: API_SERVER_KEY
+          remoteRef:
+            key: /homelab/k8s/secrets
+            property: hermes-api-server-key
+        # - secretKey: TELEGRAM_BOT_TOKEN
+        #   remoteRef:
+        #     key: /homelab/k8s/secrets
+        #     property: hermes-telegram-bot-token
+        # - secretKey: DISCORD_BOT_TOKEN
+        #   remoteRef:
+        #     key: /homelab/k8s/secrets
+        #     property: hermes-discord-bot-token
+
+    # Required by the chart schema; unused while externalSecret.enabled=true.
+    env: {}
+
+    # Restart the agent when the ExternalSecret content changes.
+    podAnnotations:
+      reloader.stakater.com/auto: 'true'
+
+    # --- Inbound listeners -------------------------------------------------
+    # Three listeners, three hostnames, all LAN-only via route.yml:
+    #   9119 dashboard  - admin UI; its Chat tab embeds the real TUI over PTY
+    #   9120 webapp     - Hermes Desktop in a browser tab
+    #   8642 api-server - OpenAI-compatible HTTP API (bearer API_SERVER_KEY)
+    # Dashboard and webapp run as s6 services next to `gateway run` in the
+    # same pod and share HERMES_HOME. Routing is NOT done by the chart's
+    # Ingress (see ingress.enabled below); it is IngressRoutes in route.yml so
+    # that they can reuse the cluster-wide `ipsec-prv` middleware and stay
+    # LAN-only.
+    dashboard:
+      enabled: true
+      publicUrl: https://dashboard.hermes.hrry.dev
+      # Traefik is a Deployment here, so the dashboard sees a pod IP from the
+      # k3s pod CIDR, not the client's LAN address.
+      trustedProxies: ['10.42.0.0/16']
+      auth:
+        provider: external
+
+    # OpenAI-compatible HTTP API ("/v1/..."). Gate is API_SERVER_KEY, which is
+    # a required env var even on a loopback bind, so it lives in the
+    # ExternalSecret below. Empty corsOrigins = no browser CORS access.
+    apiServer:
+      enabled: true
+      host: 0.0.0.0
+      port: 8642
+
+    service:
+      enabled: true
+      ports:
+        - { name: dashboard, port: 9119, targetPort: 9119 }
+        - { name: webapp, port: 9120, targetPort: 9120 }
+        - { name: api-server, port: 8642, targetPort: 8642 }
+
+    # Deliberately off: a plain Ingress cannot reference the shared
+    # `ipsec-prv` Middleware because this traefik only enables
+    # --providers.kubernetescrd.allowCrossNamespace (the Ingress provider
+    # would silently drop the reference and expose these listeners).
+    ingress:
+      enabled: false
+
+    # --- Optional isolation ----------------------------------------------
+    # Note the ingress side is already handled by ipsec-prv in route.yml.
+    # The agent executes arbitrary shell commands; this keeps it off RFC1918
+    # and the cloud metadata endpoint. Enable it once you no longer need the
+    # agent to reach in-cluster services (minio, db, LiteLLM, ...).
+    networkPolicy:
+      enabled: false
+      blockPrivateEgress: true

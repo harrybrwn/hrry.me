@@ -1,7 +1,9 @@
 ---
 name: hrry-k8s
 description: >-
-    Kubernetes setup instructions. Use when adding, editing, or removing kubernetes configuration.
+    Kubernetes setup instructions. Use when adding, editing, or removing
+    kubernetes configuration including CRDs, helm charts, and kustomization
+    files.
 ---
 
 # Kubernetes
@@ -13,7 +15,7 @@ description: >-
 - Prefer using kustomize for config management.
 - Do **NOT** read any `.env` files.
 - All kubernetes configuration should be in `./config/k8s/`.
-- Helm charts are managed by the helm operator and are added using `kind: HelmChart` files.
+- Helm charts are managed by the [helm controler](https://github.com/k3s-io/helm-controller) and are added using `kind: HelmChart` files.
 
 ## Layout
 
