@@ -1,0 +1,11 @@
+{
+  "packages": [
+    {
+      "source": "git:github.com/harrybrwn/pi-google-services",
+      "autoload": false,
+      "extensions": [
+        "-index.ts"
+      ]
+    }
+  ]
+}

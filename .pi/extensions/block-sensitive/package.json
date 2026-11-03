@@ -1,0 +1,17 @@
+{
+	"name": "block-sensitive",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Pi extension: block reads of sensitive files from the file tools and from bash commands",
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"dependencies": {
+		"tree-sitter": "0.25.1",
+		"tree-sitter-bash": "0.25.1"
+	},
+	"devDependencies": {
+		"vitest": "^5.1.0"
+	}
+}

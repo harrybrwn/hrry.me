@@ -75,3 +75,6 @@ scripts/deploy.sh
 # Needed for buildkit
 !config/*-ca.crt
 
+
+# pi agent: local logs (blocked tool calls)
+.pi/logs/
