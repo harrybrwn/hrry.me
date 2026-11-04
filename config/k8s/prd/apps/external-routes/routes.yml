@@ -1,0 +1,106 @@
+# Docs: https://doc.traefik.io/traefik/routing/providers/kubernetes-crd
+---
+# Private (LAN-only) routes for things that are NOT in the cluster.
+#
+# Every route is gated by the cluster-wide `ipsec-prv` middleware defined in
+# prd/ingress-routes.yml (loopback + RFC1918 only). Traefik runs with
+# externalTrafficPolicy: Local so LAN clients keep their 10.0.0.x source
+# address; anything arriving from the internet (directly or via Cloudflare) is
+# refused with a 403 before it is proxied.
+#
+# TLS: pi/jupyter/dsh.hrry.dev are served from the namespace-local
+# homelab-external-tls Certificate in tls.yml -- traefik can only use a TLS
+# secret from the IngressRoute's own namespace, and the hub `hrry-dev-tls`
+# secret in `default` is not allowed to be replicated (no
+# replicator.v1.mittwald.de/replication-allowed annotation on that Certificate).
+# Backends speak plain HTTP, so TLS terminates here.
+#
+# An IngressRoute (not an Ingress) is used for two reasons: a plain Ingress
+# cannot reference the shared `ipsec-prv` Middleware (this traefik only enables
+# --providers.kubernetescrd.allowCrossNamespace, the Ingress provider would
+# silently drop the reference), and the target ports have to be integers for
+# ExternalName services.
+#
+# `ipsec-prv` stays in `default` (prd/ingress-routes.yml) and is referenced
+# across namespaces, which is exactly what allowCrossNamespace is for. The
+# set-host-* middlewares below are local to this namespace.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: external-routes
+  namespace: homelab-external
+spec:
+  entryPoints: [websecure]
+  routes:
+    - match: Host(`pi.hrry.dev`)
+      kind: Rule
+      middlewares:
+        - name: ipsec-prv
+          namespace: default
+        # I don't think this middleware is needed:
+        #- name: set-host-pi
+      services:
+        - name: pi
+          kind: Service
+          port: 30141
+          scheme: http
+
+    - match: Host(`jupyter.hrry.dev`)
+      kind: Rule
+      middlewares:
+        - name: ipsec-prv
+          namespace: default
+      services:
+        - name: jupyter
+          kind: Service
+          port: 8888
+          scheme: http
+
+    - match: Host(`dsh.hrry.dev`)
+      kind: Rule
+      middlewares:
+        - name: ipsec-prv
+          namespace: default
+        - name: set-host-dsh
+      services:
+        - name: dsh
+          kind: Service
+          port: 80
+          scheme: http
+  tls:
+    secretName: homelab-external-tls
+
+
+# ---
+# # The app on 10.0.0.200:30141 only trusts a few Host values and answers
+# # 403 "Untrusted request" for everything else, in practice pi.hrry.lan,
+# # 10.0.0.200 and localhost. Rewrite the Host so the request is accepted. If the
+# # app is ever configured with pi.hrry.dev in its trusted-host list, drop this
+# # middleware from the route.
+# # Traefik >= 2.5 handles `Host` in customRequestHeaders specially and rewrites
+# # req.Host (not just the header map), which is what the reverse proxy dials
+# # with, so the backend really does see pi.hrry.lan.
+# apiVersion: traefik.io/v1alpha1
+# kind: Middleware
+# metadata:
+#   name: set-host-pi
+#   namespace: homelab-external
+# spec:
+#   headers:
+#     customRequestHeaders:
+#       Host: pi.hrry.lan
+
+---
+# 10.0.0.200:80 is an nginx whose vhosts are keyed on the Host header; the
+# catch-all is the default "Welcome to nginx!" page, and the app only shows up
+# on the dsh.hrry.lan server block (which is basic-auth protected). Without
+# this rewrite dsh.hrry.dev would serve the nginx splash page.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: set-host-dsh
+  namespace: homelab-external
+spec:
+  headers:
+    customRequestHeaders:
+      Host: dsh.hrry.lan

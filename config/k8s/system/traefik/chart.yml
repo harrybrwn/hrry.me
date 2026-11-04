@@ -54,3 +54,7 @@ spec:
       - "--metrics.prometheus=true"
       - "--providers.kubernetescrd=true"
       - "--providers.kubernetescrd.allowCrossNamespace=true"
+      # Needed by prd/apps/external-routes (ExternalName services pointing at
+      # hosts outside the cluster). Off by default for security reasons
+      # (CVE-2021-25740); every route using it is LAN-only via ipsec-prv.
+      - "--providers.kubernetescrd.allowexternalnameservices=true"

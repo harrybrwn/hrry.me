@@ -23,6 +23,7 @@ resources:
   - bsky/hry.at
   - bsky/pds.hrry.me
   - keybr
+  - external-routes
 
 images:
   - name: 10.0.0.11:5000/harrybrwn/grafana:latest

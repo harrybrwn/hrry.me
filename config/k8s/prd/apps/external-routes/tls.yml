@@ -1,0 +1,36 @@
+---
+# Traefik can only use a TLS secret from the IngressRoute's own namespace, and
+# replicating `default/hrry-dev-tls` is not possible as-is (that Certificate has
+# no replicator.v1.mittwald.de/replication-allowed annotation, unlike
+# hrry-me-tls), so this namespace gets its own certificate.
+#
+# Deliberately NOT a `*.hrry.dev` wildcard: that is the same exact SAN set as
+# the existing hrry-dev-tls certificate, and Let's Encrypt rate-limits
+# duplicate certificates (5 per week for an identical set of names). Listing the
+# three hostnames keeps the set unique. Add a dnsNames entry here when a new
+# hostname is routed in routes.yml.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: homelab-external-tls
+  namespace: homelab-external
+spec:
+  secretName: homelab-external-tls
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  commonName: pi.hrry.dev
+  dnsNames:
+    - pi.hrry.dev
+    - jupyter.hrry.dev
+    - dsh.hrry.dev
+  duration: 2160h
+  renewBefore: 1440h
+  subject:
+    organizations:
+      - HarryBrown
+    organizationalUnits:
+      - homelab
+  usages:
+    - server auth

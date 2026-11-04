@@ -1,0 +1,7 @@
+---
+# Own namespace for routes/backends that are outside the cluster, so these
+# objects do not sit in `default` next to the real workloads.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homelab-external

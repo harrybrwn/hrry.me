@@ -17,6 +17,11 @@ spec:
       - "--log.level=DEBUG"
       - "--metrics.prometheus=true"
       - "--providers.kubernetescrd.allowCrossNamespace=true"
+      # Required by prd/apps/external-routes (ExternalName Services for hosts
+      # outside the cluster). Helm replaces (does not append to) the
+      # additionalArguments list from system/traefik/chart.yml, so the flag has
+      # to be repeated here.
+      - "--providers.kubernetescrd.allowexternalnameservices=true"
     service:
       spec:
         # Use "Local" to forward client ip addresses correctly

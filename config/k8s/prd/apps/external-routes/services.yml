@@ -1,0 +1,77 @@
+---
+# Backends that live OUTSIDE the cluster (10.0.0.200), addressed by name so the
+# IngressRoute has something to point its `services[].name` at.
+#
+# These are `type: ExternalName`, not a selectorless Service + hand-written
+# Endpoints, on purpose. The prd/apps kustomization applies
+# `labels: [{includeSelectors: true, pairs: {environment: prd}}]`, and
+# kustomize's label transformer *creates* `spec.selector` on every Service. A
+# Service with a selector has its Endpoints owned by the endpoints controller,
+# which would wipe any subsets we shipped by hand (pods in `default` carry
+# `environment: prd` too, so it would happily point at the wrong pods).
+# `spec.selector` is ignored for ExternalName Services and the endpoints
+# controller does not manage them, so the injected label is harmless here.
+#
+# Traefik resolves an ExternalName Service itself and backs the route with
+#   http://<externalName>:<port from the IngressRoute>
+# (it never reads Endpoints for these, and the name may be an IP literal --
+# "10.0.0.200" is a valid DNS1123 subdomain, which is all the API validates).
+#
+# NOTE: ExternalName backends are refused by default in the Traefik CRD
+# provider for security reasons (CVE-2021-25740). They only work because
+# system/traefik and system/traefik-extras pass
+#   --providers.kubernetescrd.allowexternalnameservices=true
+# Remove that flag and these routes stop being built (traefik logs
+# "externalName services not allowed" and the routers get dropped).
+#
+# Traefik picks the backend port from the IngressRoute, so it has to be an
+# integer there (a *named* port is rejected for ExternalName services). The
+# ports below just have to agree with it.
+
+# pi.hrry.dev -> 10.0.0.200:30141 (NodePort on the other machine)
+apiVersion: v1
+kind: Service
+metadata:
+  name: pi
+  namespace: homelab-external
+spec:
+  type: ExternalName
+  externalName: 10.0.0.200
+  ports:
+    - name: http
+      port: 30141
+      protocol: TCP
+
+---
+# jupyter.hrry.dev -> 10.0.0.200:8888 (Tornado, base_url=/)
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter
+  namespace: homelab-external
+spec:
+  type: ExternalName
+  externalName: 10.0.0.200
+  ports:
+    - name: http
+      port: 8888
+      protocol: TCP
+
+---
+# dsh.hrry.dev -> dsh.hrry.lan:80 (nginx vhost in front of the app)
+# The DNS name (not the IP) is used so that the backend keeps resolving through
+# the LAN's own DNS -- the .lan zone has to be resolvable from the traefik pods
+# for this to work (CoreDNS forwards unknown zones to the node resolver, which
+# is the router).
+apiVersion: v1
+kind: Service
+metadata:
+  name: dsh
+  namespace: homelab-external
+spec:
+  type: ExternalName
+  externalName: dsh.hrry.lan
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
