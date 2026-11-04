@@ -15,6 +15,10 @@
  *   - `bash -c '...'`, `sh -c`, `eval`, `su -c` bodies are re-parsed (depth 3).
  *   - A token has to look like a path (`.`/`/` or an extension-less protected name),
  *     which is what keeps prose and search patterns from matching.
+ *   - Arguments that *exclude* files are not reads, but only where the command
+ *     says so: `COMMAND_FLAG_RULES` lists, per command, the flags whose value is
+ *     a negatable glob (`rg --glob '!*.tfstate*'`) or an exclude list
+ *     (`grep --exclude '*.env'`).
  *
  * Known gaps: `find -exec cat {} +`, tokens that only resolve at runtime (`cat $FILE`).
  */
@@ -111,6 +115,53 @@ function unquote(token: string): string {
 
 const ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
 
+/**
+ * Command- and flag-specific argument rules.
+ *
+ * Every argument of a reader command is normally judged as a possible path. Some
+ * flags do not take paths though: their value is a glob, and some of those globs
+ * *exclude* files (`rg --glob '!*.tfstate*'`). Such a value is not a read and
+ * must be left alone.
+ *
+ * Scope is deliberately narrow: a rule fires only when the resolved command
+ * matches AND the token is the value of the listed flag. A bare `!pattern`
+ * argument, the same pattern passed to another command, or the same flag on a
+ * different command is still checked normally. Add an entry here when another
+ * command grows a flag like this — nothing else has to change.
+ */
+interface FlagRule {
+	/** Gitignore-style glob where a leading `!` negates, i.e. excludes, matches. */
+	negatableGlob?: boolean;
+	/** Value names files to exclude, so it is never a read. */
+	excludes?: boolean;
+}
+
+const GREP_EXCLUDES: Record<string, FlagRule> = {
+	"--exclude": { excludes: true },
+	"--exclude-dir": { excludes: true },
+};
+
+const COMMAND_FLAG_RULES: Record<string, Record<string, FlagRule>> = {
+	// ripgrep: `--glob '!*.tfstate*'` tells rg to skip the files we protect.
+	rg: {
+		"--glob": { negatableGlob: true },
+		"-g": { negatableGlob: true },
+		"--pre-glob": { negatableGlob: true },
+	},
+	// grep: `--exclude '*.env'` / `--exclude-dir` name what to skip.
+	grep: GREP_EXCLUDES,
+	egrep: GREP_EXCLUDES,
+	fgrep: GREP_EXCLUDES,
+};
+
+/** The rule for `flag` on `command`, if the table declares one. */
+function flagRuleFor(command: string, flag: string): FlagRule | undefined {
+	if (!Object.hasOwn(COMMAND_FLAG_RULES, command)) return undefined;
+
+	const table = COMMAND_FLAG_RULES[command];
+	return Object.hasOwn(table, flag) ? table[flag] : undefined;
+}
+
 /** The rule hit by one command argument, if any. */
 function checkToken(raw: string, cwd: string): Rule | undefined {
 	let token = unquote(raw);
@@ -131,12 +182,46 @@ function checkToken(raw: string, cwd: string): Rule | undefined {
 	return matchPath(token, cwd) ?? matchGlob(token);
 }
 
-/** First offending argument in the list. */
-function checkArguments(args: string[], cwd: string): Rule | undefined {
-	for (const raw of args) {
+/** True when a flag value is a pattern that excludes files instead of reading them. */
+function isExcludedValue(rule: FlagRule, value: string): boolean {
+	if (rule.excludes) return true;
+	return Boolean(rule.negatableGlob) && unquote(value).startsWith("!");
+}
+
+/**
+ * First offending argument in the list.
+ *
+ * `command` is only used to look up `COMMAND_FLAG_RULES`; the walk itself is
+ * generic. A flag declared there owns the token after it (or the text after
+ * `=`), so that value is judged once, with the flag's rule applied.
+ */
+function checkArguments(command: string, args: string[], cwd: string): Rule | undefined {
+	for (let i = 0; i < args.length; i++) {
+		const raw = args[i];
+		const eq = raw.startsWith("-") ? raw.indexOf("=") : -1;
+
+		if (eq > 0) {
+			// `rg --glob=!*.env`, `grep --exclude=*.env`: value attached to the flag.
+			const attached = flagRuleFor(command, raw.slice(0, eq));
+			if (attached && isExcludedValue(attached, raw.slice(eq + 1))) continue;
+		} else if (raw.startsWith("-")) {
+			// `rg --glob '!*.tfstate*'`, `grep --exclude '*.env'`: consume the value so
+			// it is not revisited as a bare argument below.
+			const declared = flagRuleFor(command, raw);
+			if (declared) {
+				const value = args[++i];
+				if (value === undefined || isExcludedValue(declared, value)) continue;
+
+				const found = checkToken(value, cwd);
+				if (found) return found;
+				continue;
+			}
+		}
+
 		const rule = checkToken(raw, cwd);
 		if (rule) return rule;
 	}
+
 	return undefined;
 }
 
@@ -217,7 +302,7 @@ function inspectNode(node: SyntaxNode, cwd: string, depth: number): Hit | undefi
 
 			if (command) {
 				if (READERS.has(command.name)) {
-					const rule = checkArguments(command.args, cwd);
+					const rule = checkArguments(command.name, command.args, cwd);
 					if (rule) return { rule, matched: node.text };
 				}
 

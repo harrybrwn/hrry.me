@@ -192,6 +192,48 @@ describe("inspectCommand — false-positive guards", () => {
 	});
 });
 
+describe("inspectCommand — explicit exclusions are not reads", () => {
+	const allowed = [
+		// the reported case: rg told to ignore the very files we protect
+		`rg -l -i "cert-manager" --glob '!*.tfstate*' --glob '!*.env' . | head -30`,
+		"rg --glob '!*.tfstate*' --glob '!*.env' -n cert .",
+		"rg -n cert --glob '!*.env' .",
+		"rg --glob=!*tfstate* -n cert .",
+		"rg -g '!*.key' -n tls .",
+		"rg --pre-glob '!*.env' --pre 'cat' -n cert .",
+		"sudo rg --glob '!*.env' -n cert .",
+		// grep's exclude flags name what to skip
+		"grep -rn --exclude '*.env' --exclude-dir .terraform SECRET .",
+		"grep -rn --exclude=*.env SECRET .",
+	];
+
+	it.each(allowed)("allows %s", (command) => {
+		expect(inspectCommand(command, cwd), command).toBeUndefined();
+	});
+
+	const stillBlocked = [
+		// an inclusive glob still selects protected files
+		"rg --glob '*.env' -n cert .",
+		// exclusions do not cover the rest of the command line
+		"rg --glob '!*.tfstate*' -n cert .env",
+		"rg --glob '!*.env' --glob '*.tfvars' -n cert .",
+		"rg --glob=!*.env -n cert prod.tfvars",
+		"grep --exclude '*.key' SECRET .env",
+		"grep --exclude-dir x -rn SECRET prod.tfvars",
+		// scoping: only rg's glob flags negate, and only as a flag value
+		"rg '!*.env' -n cert .",
+		"grep -rn '!*.env' .",
+		"cat '!*.env'",
+		// scoping: --exclude is only an ignore list for grep
+		"tar --exclude=.env -czf out.tgz .",
+		"rsync --exclude '*.env' . host:/tmp",
+	];
+
+	it.each(stillBlocked)("still blocks %s", (command) => {
+		expect(inspectCommand(command, cwd), command).toBeDefined();
+	});
+});
+
 describe("inspectCommand — reporting", () => {
 	it("reports the k8s json rule for nested json", () => {
 		const hit = inspectCommand("cat config/k8s/dev/filestash-config.json", "/repo");
