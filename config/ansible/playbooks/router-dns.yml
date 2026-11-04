@@ -1,0 +1,95 @@
+- name: Configure Router DNS
+  become: false
+  gather_facts: false
+  hosts: router
+  vars_files:
+    - ../vars/router-password.yml
+  vars:
+    router_ip: 10.0.0.1
+  module_defaults:
+    community.routeros.api: &ros_auth
+      hostname: "{{ ansible_host }}"
+      username: "{{ router_username }}"
+      password: "{{ router_password }}"
+    community.routeros.api_modify: *ros_auth
+    community.routeros.api_find_and_modify: *ros_auth
+    community.routeros.api_facts: *ros_auth
+
+  tasks:
+    # Split-horizon DNS for the LAN-only traefik routes defined in
+    # config/k8s/prd/apps/external-routes:
+    #
+    #   pi.hrry.dev       -> 10.0.0.200:30141
+    #   jupyter.hrry.dev  -> 10.0.0.200:8888
+    #   dsh.hrry.dev      -> dsh.hrry.lan:80
+    #
+    # These names must resolve to the cluster and not to Cloudflare: the routes
+    # are gated by the `ipsec-prv` middleware (loopback + RFC1918 only), so a
+    # request that comes in through Cloudflare carries a Cloudflare source
+    # address and is refused with 403. Nothing public is added here -- there are
+    # deliberately no records for these names in the public zone.
+    #
+    # One A record per node of the `k3s_cluster` group in inventory.yml, because
+    # k3s' ServiceLB (klipper) runs an svclb-traefik daemonset on every node, so
+    # :443 is served on all of them and whichever address the client picks ends
+    # up at a traefik pod. Trade-off: a node that is down still has an A record,
+    # so clients may have to fail over to the next address. Drop a line here if
+    # a node is decommissioned.
+    #
+    # handle_absent_entries: ignore -- this list only adds/updates these names.
+    # It must never remove entries owned elsewhere, i.e. the router.lan /
+    # rpi*.lan records managed by playbooks/router.yml or anything added by hand.
+    #
+    # Entries are matched on every field given in `data` (name + address), so
+    # this is idempotent as long as no entry with the same name and a different
+    # address already exists. Check before the first run with:
+    #   ansible-playbook playbooks/router-dns.yml --check --diff
+    - name: Setup static DNS records for LAN-only routes
+      community.routeros.api_modify:
+        <<: *ros_auth
+        path: ip dns static
+        handle_absent_entries: ignore
+        handle_entries_content: ignore
+        data:
+          # pi.hrry.dev
+          - { name: pi.hrry.dev, address: 10.0.0.11 }      # laptop (k3s_master)
+          - { name: pi.hrry.dev, address: 10.0.0.13 }      # lenovo
+          - { name: pi.hrry.dev, address: 10.0.0.21 }      # rpi1
+          - { name: pi.hrry.dev, address: 10.0.0.22 }      # rpi2
+          - { name: pi.hrry.dev, address: 10.0.0.23 }      # rpi3
+          - { name: pi.hrry.dev, address: 10.0.0.24 }      # rpi4
+
+          # jupyter.hrry.dev
+          - { name: jupyter.hrry.dev, address: 10.0.0.11 } # laptop (k3s_master)
+          - { name: jupyter.hrry.dev, address: 10.0.0.13 } # lenovo
+          - { name: jupyter.hrry.dev, address: 10.0.0.21 } # rpi1
+          - { name: jupyter.hrry.dev, address: 10.0.0.22 } # rpi2
+          - { name: jupyter.hrry.dev, address: 10.0.0.23 } # rpi3
+          - { name: jupyter.hrry.dev, address: 10.0.0.24 } # rpi4
+
+          # dsh.hrry.dev
+          - { name: dsh.hrry.dev, address: 10.0.0.11 }     # laptop (k3s_master)
+          - { name: dsh.hrry.dev, address: 10.0.0.13 }     # lenovo
+          - { name: dsh.hrry.dev, address: 10.0.0.21 }     # rpi1
+          - { name: dsh.hrry.dev, address: 10.0.0.22 }     # rpi2
+          - { name: dsh.hrry.dev, address: 10.0.0.23 }     # rpi3
+          - { name: dsh.hrry.dev, address: 10.0.0.24 }     # rpi4
+
+    # Uncomment this block to delete the records.
+    #
+    # - name: Remove LAN-only DNS records for external routes
+    #   community.routeros.api_modify:
+    #     <<: *ros_auth
+    #     path: ip dns static
+    #     data: []                                  # keep nothing …
+    #     handle_absent_entries: remove             # … so delete everything else
+    #     # Must NOT be `ignore`: the module refuses remove+ignore for this path
+    #     # (community/routeros api_modify.py: "handle_absent_entries=remove
+    #     # cannot be combined with handle_entries_content=ignore").
+    #     handle_entries_content: remove_as_much_as_possible
+    #     restrict:                                 # … limited to these names only
+    #       - field: name
+    #         values:
+    #           - pi.hrry.dev
+    #           - jupyter.hrry.dev
+    #           - dsh.hrry.dev
